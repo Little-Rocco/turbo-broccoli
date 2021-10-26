@@ -37,7 +37,7 @@ beta1_hyperparam = 0.5
 iters_between_updates = 80
 
 #Number of epochs to wait before showing graphs
-epochs_between_each_graph = 5
+epochs_between_each_graph = 10
 
 
 dataset = torchvision.datasets.ImageFolder(root = dataroot,
@@ -66,10 +66,24 @@ class Generator(torch.nn.Module):
         self.flatten = torch.nn.Flatten()
         self.linear_relu_stack = torch.nn.Sequential(
 			#the neural network
-			torch.nn.Linear(gen_input_nodes, 512),
-			torch.nn.ReLU(),
-			torch.nn.Linear(512, image_size*image_size*colour_channels),
-			torch.nn.Tanh(),
+			torch.nn.Linear(gen_input_nodes, 256),  #connections from input layer to 1st hidden layer
+			torch.nn.ReLU(),  #activation function for 1st hidden layer
+			torch.nn.Linear(256, 256),  #connections from 1st to 2nd hidden layer
+			torch.nn.ReLU(),  #activation for 2nd hidden layer
+			torch.nn.Linear(256, 256),  #...
+			torch.nn.ReLU(),  
+			torch.nn.Linear(256, 256),  
+			torch.nn.ReLU(),  
+			torch.nn.Linear(256, 256),
+			torch.nn.ReLU(),  
+			torch.nn.Linear(256, 256),  
+			torch.nn.ReLU(),  
+			torch.nn.Linear(256, 256),
+			torch.nn.ReLU(),  
+			torch.nn.Linear(256, 256),  
+			torch.nn.ReLU(),  
+			torch.nn.Linear(256, image_size*image_size*colour_channels),  #connections from 2nd hidden to output layer
+			torch.nn.Tanh(),  #activation for output layer
 		)
     def forward(self, x):
         x = self.flatten(x)
@@ -88,9 +102,23 @@ class Discriminator(torch.nn.Module):
         super(Discriminator, self).__init__()
         self.flatten = torch.nn.Flatten()
         self.linear_relu_stack = torch.nn.Sequential(
-			torch.nn.Linear(image_size*image_size*colour_channels, 512),
+			torch.nn.Linear(image_size*image_size*colour_channels, 256),
 			torch.nn.ReLU(),
-			torch.nn.Linear(512, 1),
+			torch.nn.Linear(256, 256),
+			torch.nn.ReLU(),
+			torch.nn.Linear(256, 256),  
+			torch.nn.ReLU(),  
+			torch.nn.Linear(256, 256),  
+			torch.nn.ReLU(),  
+			torch.nn.Linear(256, 256),  
+			torch.nn.ReLU(),  
+			torch.nn.Linear(256, 256),  
+			torch.nn.ReLU(),  
+			torch.nn.Linear(256, 256),  
+			torch.nn.ReLU(),  
+			torch.nn.Linear(256, 256),  
+			torch.nn.ReLU(),  
+			torch.nn.Linear(256, 1),
 			torch.nn.Sigmoid(),
 		)
 

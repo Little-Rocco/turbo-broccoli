@@ -1,3 +1,11 @@
+# Data folders
+Initial classifier attempt/data/
+
+# Saved models
+*.pth
+
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

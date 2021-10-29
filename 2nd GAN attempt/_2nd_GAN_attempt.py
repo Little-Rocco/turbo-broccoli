@@ -6,9 +6,8 @@ import matplotlib.animation as animation
 import numpy as np
 from IPython.display import HTML
 
-
 # Root directory for dataset
-dataroot = "C:\\Users\\Anders\\source\\repos\\data\\shapes"
+dataroot = "C:\\Users\\fred7\\PycharmProjects\\turbo-broccoli\\data\\shapes"
 
 # Batch size during training
 batch_size = 64
@@ -32,32 +31,26 @@ learning_rate = 0.0002
 # Beta1 hyperparam for Adam optimizers - no touching!
 beta1_hyperparam = 0.5
 
-
-#Number of iterations to wait before printing updates
+# Number of iterations to wait before printing updates
 iters_between_updates = 80
 
-#Number of epochs to wait before showing graphs
-epochs_between_each_graph = 10
+# Number of epochs to wait before showing graphs
+epochs_between_each_graph = 5
 
-
-dataset = torchvision.datasets.ImageFolder(root = dataroot,
-										   transform = torchvision.transforms.Compose([
-														   torchvision.transforms.Resize(image_size),
-														   torchvision.transforms.CenterCrop(image_size),
-														   torchvision.transforms.ToTensor(),
-														   torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-													   ]))
-
+dataset = torchvision.datasets.ImageFolder(root=dataroot,
+                                           transform=torchvision.transforms.Compose([
+                                               torchvision.transforms.Resize(image_size),
+                                               torchvision.transforms.CenterCrop(image_size),
+                                               torchvision.transforms.ToTensor(),
+                                               torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+                                           ]))
 
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
-
-
 # Decide which device we want to run on
 device = "cpu"
-if(torch.cuda.is_available()):
-	device = "cuda:0"
-
+if (torch.cuda.is_available()):
+    device = "cuda:0"
 
 
 class Generator(torch.nn.Module):
@@ -65,26 +58,19 @@ class Generator(torch.nn.Module):
         super(Generator, self).__init__()
         self.flatten = torch.nn.Flatten()
         self.linear_relu_stack = torch.nn.Sequential(
-			#the neural network
-			torch.nn.Linear(gen_input_nodes, 256),  #connections from input layer to 1st hidden layer
-			torch.nn.ReLU(),  #activation function for 1st hidden layer
-			torch.nn.Linear(256, 256),  #connections from 1st to 2nd hidden layer
-			torch.nn.ReLU(),  #activation for 2nd hidden layer
-			torch.nn.Linear(256, 256),  #...
-			torch.nn.ReLU(),  
-			torch.nn.Linear(256, 256),  
-			torch.nn.ReLU(),  
-			torch.nn.Linear(256, 256),
-			torch.nn.ReLU(),  
-			torch.nn.Linear(256, 256),  
-			torch.nn.ReLU(),  
-			torch.nn.Linear(256, 256),
-			torch.nn.ReLU(),  
-			torch.nn.Linear(256, 256),  
-			torch.nn.ReLU(),  
-			torch.nn.Linear(256, image_size*image_size*colour_channels),  #connections from 2nd hidden to output layer
-			torch.nn.Tanh(),  #activation for output layer
-		)
+            # the neural network
+            torch.nn.Linear(gen_input_nodes, 256),
+            torch.nn.ReLU(),
+            torch.nn.Linear(256, 512),
+            torch.nn.ReLU(),
+            torch.nn.Linear(512, 1024),
+            torch.nn.ReLU(),
+            torch.nn.Linear(1024, 2048),
+            torch.nn.ReLU(),
+            torch.nn.Linear(2048, image_size * image_size * colour_channels),
+            torch.nn.Tanh(),
+        )
+
     def forward(self, x):
         x = self.flatten(x)
         logits = self.linear_relu_stack(x).reshape((x.shape[0], colour_channels, image_size, image_size))
@@ -92,35 +78,22 @@ class Generator(torch.nn.Module):
 
 
 generator_network = Generator().to(device)
-#print(generator_network)
 
 
-
+# print(generator_network)
 
 class Discriminator(torch.nn.Module):
     def __init__(self):
         super(Discriminator, self).__init__()
         self.flatten = torch.nn.Flatten()
         self.linear_relu_stack = torch.nn.Sequential(
-			torch.nn.Linear(image_size*image_size*colour_channels, 256),
-			torch.nn.ReLU(),
-			torch.nn.Linear(256, 256),
-			torch.nn.ReLU(),
-			torch.nn.Linear(256, 256),  
-			torch.nn.ReLU(),  
-			torch.nn.Linear(256, 256),  
-			torch.nn.ReLU(),  
-			torch.nn.Linear(256, 256),  
-			torch.nn.ReLU(),  
-			torch.nn.Linear(256, 256),  
-			torch.nn.ReLU(),  
-			torch.nn.Linear(256, 256),  
-			torch.nn.ReLU(),  
-			torch.nn.Linear(256, 256),  
-			torch.nn.ReLU(),  
-			torch.nn.Linear(256, 1),
-			torch.nn.Sigmoid(),
-		)
+            torch.nn.Linear(image_size * image_size * colour_channels, 512),
+            torch.nn.LeakyReLU(0.2, inplace=True),
+            torch.nn.Linear(512, 256),
+            torch.nn.LeakyReLU(0.2, inplace=True),
+            torch.nn.Linear(256, 1),
+            torch.nn.Sigmoid(),
+        )
 
     def forward(self, x):
         x = self.flatten(x)
@@ -129,9 +102,7 @@ class Discriminator(torch.nn.Module):
 
 
 discriminator_network = Discriminator().to(device)
-#print(discriminator_network)
-
-
+# print(discriminator_network)
 
 
 loss_function = torch.nn.BCELoss()
@@ -145,11 +116,10 @@ real_label = 1.
 fake_label = 0.
 
 # Setup Adam optimizers for both G and D
-optimizer_discriminator = torch.optim.Adam(discriminator_network.parameters(), lr=learning_rate, betas=(beta1_hyperparam, 0.999))
-optimizer_generator = torch.optim.Adam(generator_network.parameters(), lr=learning_rate, betas=(beta1_hyperparam, 0.999))
-
-
-
+optimizer_discriminator = torch.optim.Adam(discriminator_network.parameters(), lr=learning_rate,
+                                           betas=(beta1_hyperparam, 0.999))
+optimizer_generator = torch.optim.Adam(generator_network.parameters(), lr=learning_rate,
+                                       betas=(beta1_hyperparam, 0.999))
 
 # -------- Training Loop ----------
 
@@ -163,7 +133,7 @@ epochs = 0
 print("Starting Training Loop...")
 
 for epoch in range(num_epochs):
-	# For each batch in the dataloader
+    # For each batch in the dataloader
     for i, data in enumerate(dataloader, 0):
 
         ############################
@@ -186,15 +156,14 @@ for epoch in range(num_epochs):
 
         # Calculate gradients for Discriminator in backward pass
         discriminator_loss_real.backward()
+
         discriminator_real_input_confidence = output.mean().item()
 
-
-
-		## Train with all-fake batch
-		# Generate batch of latent vectors
+        ## Train with all-fake batch
+        # Generate batch of latent vectors
         noise = torch.randn(real_batch_size, gen_input_nodes, 1, 1, device=device)
 
-		# Generate fake image batch with Generator
+        # Generate fake image batch with Generator
         fake = generator_network(noise)
         label.fill_(fake_label)
 
@@ -214,29 +183,26 @@ for epoch in range(num_epochs):
         # Update Discriminator
         optimizer_discriminator.step()
 
-
-
-        
         ############################
         # (2) Update G network: maximize log(D(G(z)))
         ###########################
-        
+
         generator_network.zero_grad()
         label.fill_(real_label)  # fake labels are real for generator cost
 
         # Since we just updated Discriminator, perform another forward pass of all-fake batch through Discriminator
         output = discriminator_network(fake).view(-1)
-        
+
         # Calculate G's loss based on this output
         generator_loss = loss_function(output, label)
-        
+
         # Calculate gradients for G
         generator_loss.backward()
         discriminator_fake_input_confidence_2 = output.mean().item()
-        
+
         # Update G
         optimizer_generator.step()
-        
+
         # Output training stats
         if i % iters_between_updates == 0:
             print('[%5d/%5d][%5d/%5d]\tLoss_D: %.4f\tLoss_G: %.4f\tD(x): %.4f\tD(G(z)): %.4f / %.4f'
@@ -248,54 +214,55 @@ for epoch in range(num_epochs):
                      discriminator_fake_input_confidence_1,
                      discriminator_fake_input_confidence_2))
 
-        
         # Save Losses for plotting later
         generator_losses.append(generator_loss.item())
         discriminator_losses.append(discriminator_loss.item())
-        
+
         # Check how the generator is doing by saving G's output on fixed_noise
-        if (iterations % 500 == 0) or ((epoch == num_epochs-1) and (i == len(dataloader)-1)):
+        if (iterations % 500 == 0) or ((epoch == num_epochs - 1) and (i == len(dataloader) - 1)):
             with torch.no_grad():
                 fake = generator_network(fixed_noise).detach().cpu()
             img_list.append(torchvision.utils.make_grid(fake, padding=2, normalize=True))
 
         iterations += 1
-    
 
     epochs += 1
     if (epochs % epochs_between_each_graph == 0):
-        plt.figure(figsize=(10,5))
+        plt.figure(figsize=(10, 5))
         plt.title("Generator and Discriminator Loss During Training")
-        plt.plot(generator_losses,label="G")
-        plt.plot(discriminator_losses,label="D")
+        plt.plot(generator_losses, label="G")
+        plt.plot(discriminator_losses, label="D")
         plt.xlabel("iterations")
         plt.ylabel("Loss")
         plt.legend()
         plt.show()
 
-        #%%capture
-        fig = plt.figure(figsize=(8,8))
+        # %%capture
+        fig = plt.figure(figsize=(8, 8))
         plt.axis("off")
-        ims = [[plt.imshow(np.transpose(i,(1,2,0)), animated=True)] for i in img_list]
+        ims = [[plt.imshow(np.transpose(i, (1, 2, 0)), animated=True)] for i in img_list]
         ani = animation.ArtistAnimation(fig, ims, interval=1000, repeat_delay=1000, blit=True)
 
         HTML(ani.to_jshtml())
         plt.show()
 
-
         # Grab a batch of real images from the dataloader
         real_batch = next(iter(dataloader))
 
         # Plot the real images
-        plt.figure(figsize=(15,15))
-        plt.subplot(1,2,1)
+        plt.figure(figsize=(15, 15))
+        plt.subplot(1, 2, 1)
         plt.axis("off")
         plt.title("Real Images")
-        plt.imshow(np.transpose(torchvision.utils.make_grid(real_batch[0].to(device)[:64], padding=5, normalize=True).cpu(),(1,2,0)))
+        plt.imshow(
+            np.transpose(torchvision.utils.make_grid(real_batch[0].to(device)[:64], padding=5, normalize=True).cpu(),
+                         (1, 2, 0)))
 
         # Plot the fake images from the last epoch
-        plt.subplot(1,2,2)
+        plt.subplot(1, 2, 2)
         plt.axis("off")
         plt.title("Fake Images")
-        plt.imshow(np.transpose(torchvision.utils.make_grid(img_list[-1].to(device)[:64], padding=10, normalize=True).cpu(),(1,2,0)))
+        plt.imshow(
+            np.transpose(torchvision.utils.make_grid(img_list[-1].to(device)[:64], padding=10, normalize=True).cpu(),
+                         (1, 2, 0)))
         plt.show()

@@ -1,3 +1,9 @@
+# Documentation
+# install for IPython: https://ipython.org/install.html 
+# 
+# 
+# end of documentation
+
 import torch
 import torch.utils.data
 import torchvision
@@ -7,8 +13,7 @@ import numpy as np
 from IPython.display import HTML
 
 # Root directory for dataset
-dataroot = "C:\\Users\\fred7\\PycharmProjects\\turbo-broccoli\\data\\shapes"
-
+dataroot = "C:\\Users\\Anders\\source\\repos\\data\\shapes"
 # Batch size during training
 batch_size = 64
 
@@ -238,13 +243,13 @@ for epoch in range(num_epochs):
         plt.show()
 
         # %%capture
-        fig = plt.figure(figsize=(8, 8))
-        plt.axis("off")
-        ims = [[plt.imshow(np.transpose(i, (1, 2, 0)), animated=True)] for i in img_list]
-        ani = animation.ArtistAnimation(fig, ims, interval=1000, repeat_delay=1000, blit=True)
+        # fig = plt.figure(figsize=(8, 8))
+        # plt.axis("off")
+        # ims = [[plt.imshow(np.transpose(i, (1, 2, 0)), animated=True)] for i in img_list]
+        # ani = animation.ArtistAnimation(fig, ims, interval=1000, repeat_delay=1000, blit=True)
 
-        HTML(ani.to_jshtml())
-        plt.show()
+        # HTML(ani.to_jshtml())
+        # plt.show()
 
         # Grab a batch of real images from the dataloader
         real_batch = next(iter(dataloader))

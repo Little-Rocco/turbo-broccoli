@@ -38,11 +38,11 @@ learning_rate = 0.0002
 # Beta1 hyperparam for Adam optimizers - no touching!
 beta1_hyperparam = 0.5
 
+# Number of iterations to wait before printing updates
+iters_between_updates = 50
+
 # Number of epochs to wait before showing graphs
 iters_between_each_graph = 3166*5
-
-# Number of iterations to wait before printing updates
-iters_between_updates = iters_between_each_graph/25
 
 dataset = torchvision.datasets.ImageFolder(root=dataroot,
                                            transform=torchvision.transforms.Compose([

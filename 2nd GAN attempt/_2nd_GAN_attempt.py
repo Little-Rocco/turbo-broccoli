@@ -39,8 +39,8 @@ beta1_hyperparam = 0.5
 # Number of iterations to wait before printing updates
 iters_between_updates = 80
 
-# Number of epochs to wait before showing graphs
-iters_between_each_graph = 320
+# Number of iterations to wait before showing graphs
+iters_between_each_graph = 1050
 
 dataset = torchvision.datasets.ImageFolder(root=dataroot,
                                            transform=torchvision.transforms.Compose([

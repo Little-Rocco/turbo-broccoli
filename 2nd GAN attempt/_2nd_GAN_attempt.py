@@ -13,7 +13,7 @@ import numpy as np
 from IPython.display import HTML
 
 # Root directory for dataset
-dataroot = "C:\\Users\\Anders\\source\\repos\\data\\shapes"
+dataroot = "C:\\Users\\Anders\\source\\repos\\data\\celeba"
 # Batch size during training
 batch_size = 64
 
@@ -40,7 +40,7 @@ beta1_hyperparam = 0.5
 iters_between_updates = 80
 
 # Number of epochs to wait before showing graphs
-epochs_between_each_graph = 5
+iters_between_each_graph = 320
 
 dataset = torchvision.datasets.ImageFolder(root=dataroot,
                                            transform=torchvision.transforms.Compose([
@@ -229,45 +229,45 @@ for epoch in range(num_epochs):
                 fake = generator_network(fixed_noise).detach().cpu()
             img_list.append(torchvision.utils.make_grid(fake, padding=2, normalize=True))
 
+        # Show graphs
+        if (iterations % iters_between_each_graph == iters_between_each_graph-1) or ((epoch == num_epochs - 1) and (i == len(dataloader) - 1)):
+            plt.figure(figsize=(10, 5))
+            plt.title("Generator and Discriminator Loss During Training")
+            plt.plot(generator_losses, label="G")
+            plt.plot(discriminator_losses, label="D")
+            plt.xlabel("iterations")
+            plt.ylabel("Loss")
+            plt.legend()
+            plt.show()
+
+            # %%capture
+            # fig = plt.figure(figsize=(8, 8))
+            # plt.axis("off")
+            # ims = [[plt.imshow(np.transpose(i, (1, 2, 0)), animated=True)] for i in img_list]
+            # ani = animation.ArtistAnimation(fig, ims, interval=1000, repeat_delay=1000, blit=True)
+
+            # HTML(ani.to_jshtml())
+            # plt.show()
+
+            # Grab a batch of real images from the dataloader
+            real_batch = next(iter(dataloader))
+
+            # Plot the real images
+            plt.figure(figsize=(15, 15))
+            plt.subplot(1, 2, 1)
+            plt.axis("off")
+            plt.title("Real Images")
+            plt.imshow(
+                np.transpose(torchvision.utils.make_grid(real_batch[0].to(device)[:64], padding=5, normalize=True).cpu(),
+                         (1, 2, 0)))
+
+            # Plot the fake images from the last epoch
+            plt.subplot(1, 2, 2)
+            plt.axis("off")
+            plt.title("Fake Images")
+            plt.imshow(
+                np.transpose(torchvision.utils.make_grid(img_list[-1].to(device)[:64], padding=10, normalize=True).cpu(),
+                         (1, 2, 0)))
+            plt.show()
+
         iterations += 1
-
-    epochs += 1
-    if (epochs % epochs_between_each_graph == 0):
-        plt.figure(figsize=(10, 5))
-        plt.title("Generator and Discriminator Loss During Training")
-        plt.plot(generator_losses, label="G")
-        plt.plot(discriminator_losses, label="D")
-        plt.xlabel("iterations")
-        plt.ylabel("Loss")
-        plt.legend()
-        plt.show()
-
-        # %%capture
-        # fig = plt.figure(figsize=(8, 8))
-        # plt.axis("off")
-        # ims = [[plt.imshow(np.transpose(i, (1, 2, 0)), animated=True)] for i in img_list]
-        # ani = animation.ArtistAnimation(fig, ims, interval=1000, repeat_delay=1000, blit=True)
-
-        # HTML(ani.to_jshtml())
-        # plt.show()
-
-        # Grab a batch of real images from the dataloader
-        real_batch = next(iter(dataloader))
-
-        # Plot the real images
-        plt.figure(figsize=(15, 15))
-        plt.subplot(1, 2, 1)
-        plt.axis("off")
-        plt.title("Real Images")
-        plt.imshow(
-            np.transpose(torchvision.utils.make_grid(real_batch[0].to(device)[:64], padding=5, normalize=True).cpu(),
-                         (1, 2, 0)))
-
-        # Plot the fake images from the last epoch
-        plt.subplot(1, 2, 2)
-        plt.axis("off")
-        plt.title("Fake Images")
-        plt.imshow(
-            np.transpose(torchvision.utils.make_grid(img_list[-1].to(device)[:64], padding=10, normalize=True).cpu(),
-                         (1, 2, 0)))
-        plt.show()

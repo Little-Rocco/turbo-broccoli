@@ -1,5 +1,6 @@
 import os 
 import torch
+import torchvision
 from torch import nn
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
@@ -9,9 +10,28 @@ from torchvision.io import read_image
 import matplotlib.pyplot as plt
 
 
+
 learning_rate = 1*(1e-3)
 batch_size = 64
 epochs = 5000
+
+test_dataroot = "C:\\Users\\Frederik Trudslev\\Desktop\\Dataset\\shapes\\test"
+train_dataroot = "C:\\Users\\Frederik Trudslev\\Desktop\\Dataset\\shapes\\train"
+
+test_dataset =  torchvision.datasets.ImageFolder(root=test_dataroot,
+                                           transform=torchvision.transforms.Compose([
+                                               torchvision.transforms.Grayscale(),
+                                               torchvision.transforms.ToTensor(),
+                                               torchvision.transforms.Normalize((0.5), (0.5)),
+                                           ]))
+
+train_dataset =  torchvision.datasets.ImageFolder(root=train_dataroot,
+                                           transform=torchvision.transforms.Compose([
+                                               torchvision.transforms.Grayscale(),
+                                               torchvision.transforms.ToTensor(),
+                                               torchvision.transforms.Normalize((0.5), (0.5)),
+                                           ]))
+
 
 
 # Get cpu or gpu device for training.
@@ -19,63 +39,8 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 print("Using {} device".format(device))
 
 
-
-class ShapesDataset(Dataset):
-    def __init__(self, annotations_file, img_dir, transform=None, target_transform=None):
-        self.img_dir = os.path.join(os.getcwd(), img_dir)
-        self.transform = transform
-        self.target_transform = target_transform
-
-    def __len__(self):
-        return 3719 + 3764 + 3764 + 3719
-
-    def __getitem__(self, idx):
-        img_path = ""
-        inner_idx = 0
-        label = 0
-        #get directory
-        if(idx < 3719):
-            img_path = os.path.join(self.img_dir, "circle")
-            inner_idx = idx
-            label = 0
-        elif(idx < 3719 + 3764):
-            img_path = os.path.join(self.img_dir, "square")
-            inner_idx = idx - 3719
-            label = 1
-        elif(idx < 3719 + 3764 + 3764):
-            img_path = os.path.join(self.img_dir, "star")
-            inner_idx = idx - (3719 + 3764)
-            label = 2
-        else:
-            img_path = os.path.join(self.img_dir, "triangle")
-            inner_idx = idx - (3719 + 3764 + 3764)
-            label = 3
-        #get full image path
-        img_path = os.path.join(img_path, str(inner_idx))
-        img_path += ".png"
-
-        #read image
-        image = read_image(img_path).type("torch.cuda.FloatTensor")
-        image = torch.nn.functional.normalize(image)
-        if self.transform:
-            image = self.transform(image)
-        if self.target_transform:
-            label = self.target_transform(label)
-
-        return image, label
-
-
-
-
-
-training_data = ShapesDataset("", os.path.join("data", "shapes"))
-test_data = training_data
-
-
-
-
-train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True)
-test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=True)
+train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 class NeuralNetwork(nn.Module):
     def __init__(self):

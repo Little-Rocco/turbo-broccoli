@@ -13,11 +13,8 @@ import numpy as np
 from IPython.display import HTML
 
 # Root directory for dataset
-<<<<<<< Updated upstream
 dataroot = "C:\\Users\\Anders\\source\\repos\\data\\celeba"
-=======
-dataroot = "C:\\Users\\frede\\OneDrive\\Skrivebord\\Datasets\\Data\\img_align_celeba"
->>>>>>> Stashed changes
+
 # Batch size during training
 batch_size = 64
 

@@ -34,25 +34,17 @@ parser.add_argument("--ngf", type=int, default=64, help="Size of feature maps in
 parser.add_argument("--ndf", type=int, default=64, help="Size of feature maps in discriminator")
 parser.add_argument("--img_size", type=int, default=64, help="size of each image dimension")
 parser.add_argument("--channels", type=int, default=3, help="number of image channels")
-<<<<<<< Updated upstream
 parser.add_argument("--n_critic", type=int, default=5, help="number of training steps for discriminator per iter")
 parser.add_argument("--clip_value", type=float, default=0.01, help="lower and upper clip value for disc. weights")
-parser.add_argument("--sample_interval", type=int, default=5000, help="interval betwen image samples")
-=======
-parser.add_argument("--n_critic", type=int, default=1, help="number of training steps for discriminator per iter")
-parser.add_argument("--clip_value", type=float, default=0.01, help="lower and upper clip value for disc. weights")
-parser.add_argument("--sample_interval", type=int, default=100, help="interval betwen image samples")
->>>>>>> Stashed changes
+parser.add_argument("--sample_interval", type=int, default=1000, help="interval betwen image samples")
+
 opt = parser.parse_args()
 print(opt)
 
 img_shape = (opt.channels, opt.img_size, opt.img_size)
 
-<<<<<<< Updated upstream
-dataroot = "C:\\Users\\frede\\OneDrive\\Skrivebord\\Datasets\\Data\\img_align_celeba"
-=======
 dataroot = "C:\\Users\\Frederik Trudslev\\Desktop\\Dataset\\data\\celeba"
->>>>>>> Stashed changes
+
 dataset = torchvision.datasets.ImageFolder(root=dataroot,
                                            transform=torchvision.transforms.Compose([
                                                torchvision.transforms.Resize(opt.img_size),
@@ -163,16 +155,12 @@ Tensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 #Lists for plotting
 generator_losses = []
 discriminator_losses = []
-<<<<<<< Updated upstream
-
-batches_done = 0
-=======
 real_losses = []
 
+batches_done = 0
 accuracy_real, accuracy_fake = 0, 0
 batches_done = 0
 
->>>>>>> Stashed changes
 for epoch in range(opt.n_epochs):
 
     for i, (imgs, _) in enumerate(dataloader):
@@ -244,11 +232,8 @@ for epoch in range(opt.n_epochs):
         #For plotting
         generator_losses.append(loss_G.item())
         discriminator_losses.append(loss_D.item())
-<<<<<<< Updated upstream
-
-=======
         real_losses.append(real_loss.item())
->>>>>>> Stashed changes
+
         
 
         if batches_done % opt.sample_interval == 0:
@@ -273,16 +258,12 @@ for epoch in range(opt.n_epochs):
 
             
             plt.figure(figsize=(10, 5))
-<<<<<<< Updated upstream
-            plt.title("Generator and Discriminator Loss During Training")
-            plt.plot(generator_losses, label="G")
-            plt.plot(discriminator_losses, label="D")
-=======
+
             plt.title("Loss During Training")
             plt.plot(generator_losses, label="Generator Loss (D(G(z)))")
             plt.plot(discriminator_losses, label="Critic Loss, Fake (D(x) - D(G(z)))")
             plt.plot(real_losses, label="Critic Loss, Real (D(x))")
->>>>>>> Stashed changes
+
             plt.xlabel("iterations")
             plt.ylabel("Loss")
             plt.legend()

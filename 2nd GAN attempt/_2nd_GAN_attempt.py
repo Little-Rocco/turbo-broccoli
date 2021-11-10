@@ -4,18 +4,18 @@
 # 
 # end of documentation
 
+from pickle import FALSE
 import torch
-import torch.cuda
+import torchvision.models as models
 import torch.utils.data
 import torchvision
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
-from datetime import datetime
 from IPython.display import HTML
 
 # Root directory for dataset
-dataroot = "C:\\Users\\Silas Bachmann\\Downloads\\celebA"
+dataroot = "C:\\Users\\Silas Bachmann\\Downloads\\archive"
 # Batch size during training
 batch_size = 64
 
@@ -39,10 +39,13 @@ learning_rate = 0.0002
 beta1_hyperparam = 0.5
 
 # Number of iterations to wait before printing updates
-iters_between_updates = 50
+iters_between_updates = 40
 
-# Number of epochs to wait before showing graphs
-iters_between_each_graph = 3166*5
+# Number of iterations to wait before showing graphs
+iters_between_each_graph = 994*3
+
+# Number of epochs inbetween model saves
+epochsPerSave = 1
 
 dataset = torchvision.datasets.ImageFolder(root=dataroot,
                                            transform=torchvision.transforms.Compose([
@@ -59,6 +62,8 @@ device = "cpu"
 if (torch.cuda.is_available()):
     device = "cuda:0"
 
+print("Enter the number of the model you want to load, else just press enter for training")
+modeChoice = input()
 
 class Generator(torch.nn.Module):
     def __init__(self):
@@ -67,13 +72,13 @@ class Generator(torch.nn.Module):
         self.linear_relu_stack = torch.nn.Sequential(
             # the neural network
             torch.nn.Linear(gen_input_nodes, 256),
-            torch.nn.LeakyReLU(0.2, inplace=True),
+            torch.nn.ReLU(),
             torch.nn.Linear(256, 512),
-            torch.nn.LeakyReLU(0.2, inplace=True),
+            torch.nn.ReLU(),
             torch.nn.Linear(512, 1024),
-            torch.nn.LeakyReLU(0.2, inplace=True),
+            torch.nn.ReLU(),
             torch.nn.Linear(1024, 2048),
-            torch.nn.LeakyReLU(0.2, inplace=True),
+            torch.nn.ReLU(),
             torch.nn.Linear(2048, image_size * image_size * colour_channels),
             torch.nn.Tanh(),
         )
@@ -82,11 +87,8 @@ class Generator(torch.nn.Module):
         x = self.flatten(x)
         logits = self.linear_relu_stack(x).reshape((x.shape[0], colour_channels, image_size, image_size))
         return logits
-
-
+        
 generator_network = Generator().to(device)
-
-
 # print(generator_network)
 
 class Discriminator(torch.nn.Module):
@@ -107,9 +109,14 @@ class Discriminator(torch.nn.Module):
         logits = self.linear_relu_stack(x)
         return logits
 
-
 discriminator_network = Discriminator().to(device)
 # print(discriminator_network)
+if (modeChoice != ''):
+    discriminator_network = torch.load('Models\\discriminator' + modeChoice + '.pth')
+    generator_network = torch.load('Models\\generator' + modeChoice + '.pth')
+    discriminator_network.eval()
+    generator_network.eval()
+    print("\n model #" + modeChoice + " loaded")
 
 
 loss_function = torch.nn.BCELoss()
@@ -119,7 +126,7 @@ loss_function = torch.nn.BCELoss()
 fixed_noise = torch.randn(64, gen_input_nodes, 1, 1, device=device)
 
 # Establish convention for real and fake labels during training
-real_label = 1.
+real_label  = 1.
 fake_label = 0.
 
 # Setup Adam optimizers for both G and D
@@ -135,7 +142,7 @@ img_list = []
 generator_losses = []
 discriminator_losses = []
 iterations = 0
-epochs = 0
+epoch = 0
 
 print("Starting Training Loop...")
 
@@ -219,12 +226,7 @@ for epoch in range(num_epochs):
                      generator_loss.item(),
                      discriminator_real_input_confidence,
                      discriminator_fake_input_confidence_1,
-                     discriminator_fake_input_confidence_2,))
-            # For time stamps
-            now = datetime.now()
-            current_time = now.strftime("%H:%M:%S")
-            print("Current Time =", current_time)
-
+                     discriminator_fake_input_confidence_2))
 
         # Save Losses for plotting later
         generator_losses.append(generator_loss.item())
@@ -234,7 +236,7 @@ for epoch in range(num_epochs):
         if (iterations % 500 == 0) or ((epoch == num_epochs - 1) and (i == len(dataloader) - 1)):
             with torch.no_grad():
                 fake = generator_network(fixed_noise).detach().cpu()
-            img_list.append(torchvision.utils.make_grid(fake, padding=2, normalize=True))
+            img_list.append(torchvision.utils.make_grid(fake, padding=2, normalize=True))        
 
         # Show graphs
         if (iterations % iters_between_each_graph == iters_between_each_graph-1) or ((epoch == num_epochs - 1) and (i == len(dataloader) - 1)):
@@ -278,3 +280,9 @@ for epoch in range(num_epochs):
             plt.show()
 
         iterations += 1
+
+    # model saver
+    if(epoch % epochsPerSave == 0):
+        #torch.save(model.state_dict(), 'model_weights.pth' + str(i))
+        torch.save(discriminator_network, 'Models\\discriminator' + str(epoch) + '.pth')
+        torch.save(generator_network, 'Models\\generator' + str(epoch) + '.pth')

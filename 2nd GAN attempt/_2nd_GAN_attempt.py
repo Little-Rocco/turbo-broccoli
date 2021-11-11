@@ -42,7 +42,7 @@ beta1_hyperparam = 0.5
 iters_between_updates = 40
 
 # Number of iterations to wait before showing graphs
-iters_between_each_graph = 994*3
+iters_between_each_graph = 994*1
 
 # Number of epochs inbetween model saves
 epochsPerSave = 1
@@ -61,9 +61,6 @@ dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle
 device = "cpu"
 if (torch.cuda.is_available()):
     device = "cuda:0"
-
-print("Enter the number of the model you want to load, else just press enter for training")
-modeChoice = input()
 
 class Generator(torch.nn.Module):
     def __init__(self):
@@ -111,13 +108,6 @@ class Discriminator(torch.nn.Module):
 
 discriminator_network = Discriminator().to(device)
 # print(discriminator_network)
-if (modeChoice != ''):
-    discriminator_network = torch.load('Models\\discriminator' + modeChoice + '.pth')
-    generator_network = torch.load('Models\\generator' + modeChoice + '.pth')
-    discriminator_network.eval()
-    generator_network.eval()
-    print("\n model #" + modeChoice + " loaded")
-
 
 loss_function = torch.nn.BCELoss()
 
@@ -135,7 +125,6 @@ optimizer_discriminator = torch.optim.Adam(discriminator_network.parameters(), l
 optimizer_generator = torch.optim.Adam(generator_network.parameters(), lr=learning_rate,
                                        betas=(beta1_hyperparam, 0.999))
 
-# -------- Training Loop ----------
 
 # Lists to keep track of progress
 img_list = []
@@ -144,9 +133,34 @@ discriminator_losses = []
 iterations = 0
 epoch = 0
 
-print("Starting Training Loop...")
 
-for epoch in range(num_epochs):
+# Loads a saved checkpoint
+print("Enter the number of the model you want to load, else just press enter for training")
+modeChoice = input()
+
+if (modeChoice != ''):
+    model = torch.load('Models\\Model' + modeChoice + '.pth')
+    
+    discriminator_network.load_state_dict(model['Discriminator'])
+    optimizer_discriminator.load_state_dict(model['DiscriminatorOptimizer'])
+    discriminator_losses = model['DiscriminatorLosses']
+
+    generator_network.load_state_dict(model['Generator'])
+    optimizer_generator.load_state_dict(model['GeneratorOptimizer'])
+    generator_losses = model['GeneratorLosses']
+
+    epoch = model['Epoch']
+    discriminator_network.eval()
+    generator_network.eval()
+    print("\n model #" + modeChoice + " loaded")
+
+#
+print("Disable learning? (y/n)")
+learningChoice = input()
+
+# -------- Training Loop ----------
+print("Starting Loop...")
+for epoch in range(epoch, num_epochs+1):
     # For each batch in the dataloader
     for i, data in enumerate(dataloader, 0):
 
@@ -165,13 +179,14 @@ for epoch in range(num_epochs):
         # Forward pass real batch through Discriminator
         output = discriminator_network(real_image).view(-1)
 
-        # Calculate loss on all-real batch
-        discriminator_loss_real = loss_function(output, label)
+        if (learningChoice != 'y'):
+            # Calculate loss on all-real batch
+            discriminator_loss_real = loss_function(output, label)
 
-        # Calculate gradients for Discriminator in backward pass
-        discriminator_loss_real.backward()
+            # Calculate gradients for Discriminator in backward pass
+            discriminator_loss_real.backward()
 
-        discriminator_real_input_confidence = output.mean().item()
+            discriminator_real_input_confidence = output.mean().item()
 
         ## Train with all-fake batch
         # Generate batch of latent vectors
@@ -184,22 +199,23 @@ for epoch in range(num_epochs):
         # Classify all fake batch with Discriminator
         output = discriminator_network(fake.detach()).view(-1)
 
-        # Calculate Discriminator's loss on the all-fake batch
-        discriminator_loss_fake = loss_function(output, label)
+        if (learningChoice != 'y'):
+            # Calculate Discriminator's loss on the all-fake batch
+            discriminator_loss_fake = loss_function(output, label)
+        
+            # Calculate the gradients for this batch, accumulated (summed) with previous gradients
+            discriminator_loss_fake.backward()
+            discriminator_fake_input_confidence_1 = output.mean().item()
 
-        # Calculate the gradients for this batch, accumulated (summed) with previous gradients
-        discriminator_loss_fake.backward()
-        discriminator_fake_input_confidence_1 = output.mean().item()
+            # Compute error of Discriminator as sum over the fake and the real batches
+            discriminator_loss = discriminator_loss_real + discriminator_loss_fake
 
-        # Compute error of Discriminator as sum over the fake and the real batches
-        discriminator_loss = discriminator_loss_real + discriminator_loss_fake
+            # Update Discriminator
+            optimizer_discriminator.step()
 
-        # Update Discriminator
-        optimizer_discriminator.step()
-
-        ############################
-        # (2) Update G network: maximize log(D(G(z)))
-        ###########################
+            ############################
+            # (2) Update G network: maximize log(D(G(z)))
+            ###########################
 
         generator_network.zero_grad()
         label.fill_(real_label)  # fake labels are real for generator cost
@@ -207,30 +223,37 @@ for epoch in range(num_epochs):
         # Since we just updated Discriminator, perform another forward pass of all-fake batch through Discriminator
         output = discriminator_network(fake).view(-1)
 
-        # Calculate G's loss based on this output
-        generator_loss = loss_function(output, label)
+        if (learningChoice != 'y'):
+            # Calculate G's loss based on this output
+            generator_loss = loss_function(output, label)
 
-        # Calculate gradients for G
-        generator_loss.backward()
-        discriminator_fake_input_confidence_2 = output.mean().item()
+            # Calculate gradients for G
+            generator_loss.backward()
+            discriminator_fake_input_confidence_2 = output.mean().item()
 
-        # Update G
-        optimizer_generator.step()
+            # Update G
+            optimizer_generator.step()
 
-        # Output training stats
-        if i % iters_between_updates == 0:
+        # Output training/progress stats
+        if i % iters_between_updates == 0 and learningChoice != 'y':
             print('[%5d/%5d][%5d/%5d]\tLoss_D: %.4f\tLoss_G: %.4f\tD(x): %.4f\tD(G(z)): %.4f / %.4f'
-                  % (epoch, num_epochs,
-                     i, len(dataloader),
-                     discriminator_loss.item(),
-                     generator_loss.item(),
-                     discriminator_real_input_confidence,
-                     discriminator_fake_input_confidence_1,
-                     discriminator_fake_input_confidence_2))
+                % (epoch, num_epochs,
+                    i, len(dataloader),
+                    discriminator_loss.item(),
+                    generator_loss.item(),
+                    discriminator_real_input_confidence,
+                    discriminator_fake_input_confidence_1,
+                    discriminator_fake_input_confidence_2))
+        elif i % iters_between_updates == 0:
+            print('[%5d/%5d][%5d/%5d]'
+                % (epoch, num_epochs, i, len(dataloader),
+                    ))
 
-        # Save Losses for plotting later
-        generator_losses.append(generator_loss.item())
-        discriminator_losses.append(discriminator_loss.item())
+        if (learningChoice != 'y'):
+            # Save Losses for plotting later
+            generator_losses.append(generator_loss.item())
+            discriminator_losses.append(discriminator_loss.item())
+
 
         # Check how the generator is doing by saving G's output on fixed_noise
         if (iterations % 500 == 0) or ((epoch == num_epochs - 1) and (i == len(dataloader) - 1)):
@@ -268,7 +291,7 @@ for epoch in range(num_epochs):
             plt.title("Real Images")
             plt.imshow(
                 np.transpose(torchvision.utils.make_grid(real_batch[0].to(device)[:64], padding=5, normalize=True).cpu(),
-                         (1, 2, 0)))
+                        (1, 2, 0)))
 
             # Plot the fake images from the last epoch
             plt.subplot(1, 2, 2)
@@ -276,7 +299,7 @@ for epoch in range(num_epochs):
             plt.title("Fake Images")
             plt.imshow(
                 np.transpose(torchvision.utils.make_grid(img_list[-1].to(device)[:64], padding=10, normalize=True).cpu(),
-                         (1, 2, 0)))
+                        (1, 2, 0)))
             plt.show()
 
         iterations += 1
@@ -284,5 +307,15 @@ for epoch in range(num_epochs):
     # model saver
     if(epoch % epochsPerSave == 0):
         #torch.save(model.state_dict(), 'model_weights.pth' + str(i))
-        torch.save(discriminator_network, 'Models\\discriminator' + str(epoch) + '.pth')
-        torch.save(generator_network, 'Models\\generator' + str(epoch) + '.pth')
+        torch.save({
+        'Discriminator': discriminator_network.state_dict(),
+        'DiscriminatorOptimizer': optimizer_discriminator.state_dict(),
+        'DiscriminatorLosses': discriminator_losses,
+
+        'Generator': generator_network.state_dict(),
+        'GeneratorOptimizer': optimizer_generator.state_dict(),
+        'GeneratorLosses': generator_losses,
+
+        'Epoch': epoch,
+
+        }, 'Models\\Model' + str(epoch) + '.pth')

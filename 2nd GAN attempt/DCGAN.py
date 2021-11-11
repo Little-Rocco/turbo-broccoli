@@ -15,9 +15,9 @@ from datetime import datetime
 from IPython.display import HTML
 
 # Root directory for dataset
-dataroot = "C:\\Users\\Silas Bachmann\\Downloads\\celebA"
+dataroot = "C:\\Users\\Anders\\source\\repos\\data\\celeba"
 # Batch size during training
-batch_size = 64
+batch_size = 128
 
 # Spatial size of training images. All images will be resized to this
 #   size using a transformer.
@@ -50,11 +50,11 @@ learning_rate = 0.0002
 # Beta1 hyperparam for Adam optimizers - no touching!
 beta1_hyperparam = 0.5
 
-# Number of epochs to wait before showing graphs
-iters_between_each_graph = 3166
-
 # Number of iterations to wait before printing updates
-iters_between_updates = 50 #iters_between_each_graph/25
+iters_between_updates = 50
+
+# Number of epochs to wait before showing graphs
+iters_between_each_graph = 256 #1583*5
 
 dataset = torchvision.datasets.ImageFolder(root=dataroot,
                                            transform=torchvision.transforms.Compose([
@@ -130,7 +130,11 @@ class Discriminator(torch.nn.Module):
             torch.nn.BatchNorm2d(ndf * 8),
             torch.nn.LeakyReLU(0.2, inplace=True),
             # state size. (ndf*8) x 4 x 4
-            torch.nn.Conv2d(ndf * 8, 1, 4, 1, 0, bias=False),
+            torch.nn.Conv2d(ndf * 8, 100, 4, 1, 0, bias=False),
+            torch.nn.LeakyReLU(0.2, inplace=True),
+            torch.nn.Flatten(),
+            # state size: 100
+            torch.nn.Linear(100, 1),
             torch.nn.Sigmoid()
         )
 

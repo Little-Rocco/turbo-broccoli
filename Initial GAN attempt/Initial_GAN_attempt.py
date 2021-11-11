@@ -45,7 +45,7 @@ torch.manual_seed(manualSeed)
 
 
 # Root directory for dataset
-dataroot = "C:\\Users\\Anders\\source\\repos\\data\\shapes"
+dataroot = "C:\\Users\\Anders\\source\\repos\\data\\celeba"
 
 # Number of workers for dataloader
 workers = 0
@@ -83,7 +83,7 @@ ngpu = 1
 
 
 #Number of epoch to wait before showing graphs
-epochs_between_each_graph = 10;
+epochs_between_each_graph = 10
 
 
 

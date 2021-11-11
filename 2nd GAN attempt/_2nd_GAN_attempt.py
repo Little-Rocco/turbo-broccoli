@@ -16,7 +16,7 @@ import math
 from IPython.display import HTML
 
 # Root directory for dataset
-dataroot = "C:\\Users\\Anders\\source\\repos\\data\\celeba"
+dataroot = "C:\\Users\\Anders\\source\\repos\\data\\shapes"
 # Batch size during training
 batch_size = 64
 
@@ -25,7 +25,7 @@ batch_size = 64
 image_size = 64
 
 # Number of channels in the training images. For color images this is 3
-colour_channels = 3
+colour_channels = 1
 
 # Size of z latent vector (i.e. size of generator input)
 gen_input_nodes = 100
@@ -40,20 +40,21 @@ learning_rate = 0.0002
 beta1_hyperparam = 0.5
 
 # Number of iterations to wait before printing updates
-iters_between_updates = 40
+iters_between_updates = 80
 
 # Number of iterations to wait before showing graphs
-iters_between_each_graph = 3166
+iters_between_each_graph = 234*20
 
 # Number of epochs inbetween model saves
 epochsPerSave = 1
 
 dataset = torchvision.datasets.ImageFolder(root=dataroot,
                                            transform=torchvision.transforms.Compose([
+                                               torchvision.transforms.Grayscale(num_output_channels=1),
                                                torchvision.transforms.Resize(image_size),
                                                torchvision.transforms.CenterCrop(image_size),
                                                torchvision.transforms.ToTensor(),
-                                               torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+                                               torchvision.transforms.Normalize((0.5), (0.5)),
                                            ]))
 
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)

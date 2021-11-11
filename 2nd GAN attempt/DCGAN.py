@@ -19,7 +19,7 @@ from IPython.display import HTML
 # Root directory for dataset
 dataroot = "C:\\Users\\Silas Bachmann\\Downloads\\archive"
 # Batch size during training
-batch_size = 128
+batch_size = 64
 
 # Spatial size of training images. All images will be resized to this
 #   size using a transformer.
@@ -136,11 +136,7 @@ class Discriminator(torch.nn.Module):
             torch.nn.BatchNorm2d(ndf * 8),
             torch.nn.LeakyReLU(0.2, inplace=True),
             # state size. (ndf*8) x 4 x 4
-            torch.nn.Conv2d(ndf * 8, 100, 4, 1, 0, bias=False),
-            torch.nn.LeakyReLU(0.2, inplace=True),
-            torch.nn.Flatten(),
-            # state size: 100
-            torch.nn.Linear(100, 1),
+            torch.nn.Conv2d(ndf * 8, 1, 4, 1, 0, bias=False),
             torch.nn.Sigmoid()
         )
 

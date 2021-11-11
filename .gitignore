@@ -530,3 +530,4 @@ FodyWeavers.xsd
 *.sln.iml
 
 # ----------------------end of Visual Studio gitignore stuff-----------------------
+*.png

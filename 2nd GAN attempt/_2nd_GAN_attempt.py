@@ -12,10 +12,11 @@ import torchvision
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
+import math
 from IPython.display import HTML
 
 # Root directory for dataset
-dataroot = "C:\\Users\\Silas Bachmann\\Downloads\\archive"
+dataroot = "C:\\Users\\Anders\\source\\repos\\data\\shapes"
 # Batch size during training
 batch_size = 64
 
@@ -24,7 +25,7 @@ batch_size = 64
 image_size = 64
 
 # Number of channels in the training images. For color images this is 3
-colour_channels = 3
+colour_channels = 1
 
 # Size of z latent vector (i.e. size of generator input)
 gen_input_nodes = 100
@@ -39,7 +40,7 @@ learning_rate = 0.0002
 beta1_hyperparam = 0.5
 
 # Number of iterations to wait before printing updates
-iters_between_updates = 40
+iters_between_updates = 80
 
 # Number of iterations to wait before showing graphs
 iters_between_each_graph = 994*1
@@ -49,13 +50,15 @@ epochsPerSave = 1
 
 dataset = torchvision.datasets.ImageFolder(root=dataroot,
                                            transform=torchvision.transforms.Compose([
+                                               torchvision.transforms.Grayscale(num_output_channels=1),
                                                torchvision.transforms.Resize(image_size),
                                                torchvision.transforms.CenterCrop(image_size),
                                                torchvision.transforms.ToTensor(),
-                                               torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+                                               torchvision.transforms.Normalize((0.5), (0.5)),
                                            ]))
 
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)
+iters_per_epoch = (math.ceil(len(dataloader.dataset.imgs)/batch_size))
 
 # Decide which device we want to run on
 device = "cpu"
@@ -129,7 +132,9 @@ optimizer_generator = torch.optim.Adam(generator_network.parameters(), lr=learni
 # Lists to keep track of progress
 img_list = []
 generator_losses = []
+generator_losses_x = []
 discriminator_losses = []
+discriminator_losses_x = []
 iterations = 0
 epoch = 0
 
@@ -249,11 +254,11 @@ for epoch in range(epoch, num_epochs+1):
                 % (epoch, num_epochs, i, len(dataloader),
                     ))
 
-        if (learningChoice != 'y'):
-            # Save Losses for plotting later
-            generator_losses.append(generator_loss.item())
-            discriminator_losses.append(discriminator_loss.item())
-
+        # Save Losses for plotting later
+        generator_losses.append(generator_loss.item())
+        generator_losses_x.append(iterations / iters_per_epoch)
+        discriminator_losses.append(discriminator_loss.item())
+        discriminator_losses_x.append(iterations / iters_per_epoch)
 
         # Check how the generator is doing by saving G's output on fixed_noise
         if (iterations % 500 == 0) or ((epoch == num_epochs - 1) and (i == len(dataloader) - 1)):
@@ -265,9 +270,9 @@ for epoch in range(epoch, num_epochs+1):
         if (iterations % iters_between_each_graph == iters_between_each_graph-1) or ((epoch == num_epochs - 1) and (i == len(dataloader) - 1)):
             plt.figure(figsize=(10, 5))
             plt.title("Generator and Discriminator Loss During Training")
-            plt.plot(generator_losses, label="G")
-            plt.plot(discriminator_losses, label="D")
-            plt.xlabel("iterations")
+            plt.plot(generator_losses_x, generator_losses, label="G")
+            plt.plot(discriminator_losses_x, discriminator_losses, label="D")
+            plt.xlabel("Epochs")
             plt.ylabel("Loss")
             plt.legend()
             plt.show()

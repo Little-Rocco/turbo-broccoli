@@ -6,16 +6,18 @@
 
 import torch
 import torch.cuda
+import torchvision.models as models
 import torch.utils.data
 import torchvision
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
+import math
 from datetime import datetime
 from IPython.display import HTML
 
 # Root directory for dataset
-dataroot = "C:\\Users\\Anders\\source\\repos\\data\\celeba"
+dataroot = "C:\\Users\\Silas Bachmann\\Downloads\\archive"
 # Batch size during training
 batch_size = 128
 
@@ -54,7 +56,10 @@ beta1_hyperparam = 0.5
 iters_between_updates = 50
 
 # Number of epochs to wait before showing graphs
-iters_between_each_graph = 256 #1583*5
+iters_between_each_graph = 497 #1583*5
+
+# Number of epochs inbetween model saves
+epochsPerSave = 1
 
 dataset = torchvision.datasets.ImageFolder(root=dataroot,
                                            transform=torchvision.transforms.Compose([
@@ -65,6 +70,7 @@ dataset = torchvision.datasets.ImageFolder(root=dataroot,
                                            ]))
 
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)
+iters_per_epoch = (math.ceil(len(dataloader.dataset.imgs)/batch_size))
 
 # Decide which device we want to run on
 device = "cpu"
@@ -163,18 +169,49 @@ optimizer_discriminator = torch.optim.Adam(discriminator_network.parameters(), l
 optimizer_generator = torch.optim.Adam(generator_network.parameters(), lr=learning_rate,
                                        betas=(beta1_hyperparam, 0.999))
 
-# -------- Training Loop ----------
 
 # Lists to keep track of progress
 img_list = []
 generator_losses = []
+generator_losses_x = []
 discriminator_losses = []
+discriminator_losses_x = []
 iterations = 0
 epochs = 0
 
+# Loads a saved checkpoint
+print("Enter the number of the model you want to load, else just press enter for training")
+modeChoice = input()
+
+if (modeChoice != ''):
+    model = torch.load('Models\\Model' + modeChoice + '.pth')
+    
+    discriminator_network.load_state_dict(model['Discriminator'])
+    optimizer_discriminator.load_state_dict(model['DiscriminatorOptimizer'])
+    discriminator_losses = model['DiscriminatorLosses']
+    discriminator_losses_x = model['DiscriminatorLosses_x']
+
+    generator_network.load_state_dict(model['Generator'])
+    optimizer_generator.load_state_dict(model['GeneratorOptimizer'])
+    generator_losses = model['GeneratorLosses']
+    generator_losses_x = model['GeneratorLosses_x']
+
+    epoch = model['Epoch']
+    iterations = model['Iterations']
+    
+    discriminator_network.eval()
+    generator_network.eval()
+    print("\n model #" + modeChoice + " loaded")
+
+# Used to run model without learning
+print("Disable learning? (y/n)")
+learningChoice = input()
+
+# -------- Training Loop ----------
+
 print("Starting Training Loop...")
 
-for epoch in range(num_epochs):
+for epoch in range(epoch, num_epochs+1):
     # For each batch in the dataloader
     for i, data in enumerate(dataloader, 0):
 
@@ -214,7 +251,7 @@ for epoch in range(num_epochs):
 
         # Calculate Discriminator's loss on the all-fake batch
         discriminator_loss_fake = loss_function(output, label)
-
+    
         # Calculate the gradients for this batch, accumulated (summed) with previous gradients
         discriminator_loss_fake.backward()
         discriminator_fake_input_confidence_1 = output.mean().item()
@@ -222,8 +259,9 @@ for epoch in range(num_epochs):
         # Compute error of Discriminator as sum over the fake and the real batches
         discriminator_loss = discriminator_loss_real + discriminator_loss_fake
 
-        # Update Discriminator
-        optimizer_discriminator.step()
+        if (learningChoice != 'y'):
+            # Update Discriminator
+            optimizer_discriminator.step()
 
         ############################
         # (2) Update G network: maximize log(D(G(z)))
@@ -242,11 +280,12 @@ for epoch in range(num_epochs):
         generator_loss.backward()
         discriminator_fake_input_confidence_2 = output.mean().item()
 
-        # Update G
-        optimizer_generator.step()
+        if (learningChoice != 'y'):
+            # Update G
+            optimizer_generator.step()
 
         # Output training stats
-        if i % iters_between_updates == 0:
+        if i % iters_between_updates == 0 and learningChoice != 'y':
             print('[%5d/%5d][%5d/%5d]\tLoss_D: %.4f\tLoss_G: %.4f\tD(x): %.4f\tD(G(z)): %.4f / %.4f'
                   % (epoch, num_epochs,
                      i, len(dataloader),
@@ -259,11 +298,21 @@ for epoch in range(num_epochs):
             now = datetime.now()
             current_time = now.strftime("%H:%M:%S")
             print("Current Time =", current_time)
+        elif i % iters_between_updates == 0:
+            print('[%5d/%5d][%5d/%5d]'
+                % (epoch, num_epochs, i, len(dataloader),
+                    ))
+            # For time stamps
+            now = datetime.now()
+            current_time = now.strftime("%H:%M:%S")
+            print("Current Time =", current_time)
 
 
         # Save Losses for plotting later
         generator_losses.append(generator_loss.item())
+        generator_losses_x.append(iterations / iters_per_epoch)
         discriminator_losses.append(discriminator_loss.item())
+        discriminator_losses_x.append(iterations / iters_per_epoch)
 
         # Check how the generator is doing by saving G's output on fixed_noise
         if (iterations % 500 == 0) or ((epoch == num_epochs - 1) and (i == len(dataloader) - 1)):
@@ -313,3 +362,22 @@ for epoch in range(num_epochs):
             plt.show()
 
         iterations += 1
+
+    # Saves the model and more
+    if(epoch % epochsPerSave == 0):
+        #torch.save(model.state_dict(), 'model_weights.pth' + str(i))
+        torch.save({
+        'Discriminator': discriminator_network.state_dict(),
+        'DiscriminatorOptimizer': optimizer_discriminator.state_dict(),
+        'DiscriminatorLosses': discriminator_losses,
+        'DiscriminatorLosses_x': discriminator_losses_x,
+
+        'Generator': generator_network.state_dict(),
+        'GeneratorOptimizer': optimizer_generator.state_dict(),
+        'GeneratorLosses': generator_losses,
+        'GeneratorLosses_x': generator_losses_x,
+
+        'Epoch': epoch+1,
+        'Iterations': iterations,
+
+        }, 'Models\\Model' + str(epoch) + '.pth')

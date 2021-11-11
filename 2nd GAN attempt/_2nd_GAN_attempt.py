@@ -13,10 +13,11 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
 import math
+from datetime import datetime
 from IPython.display import HTML
 
 # Root directory for dataset
-dataroot = "C:\\Users\\Anders\\source\\repos\\data\\shapes"
+dataroot = "C:\\Users\\Silas Bachmann\\Downloads\\archive"
 # Batch size during training
 batch_size = 64
 
@@ -149,12 +150,16 @@ if (modeChoice != ''):
     discriminator_network.load_state_dict(model['Discriminator'])
     optimizer_discriminator.load_state_dict(model['DiscriminatorOptimizer'])
     discriminator_losses = model['DiscriminatorLosses']
+    discriminator_losses_x = model['DiscriminatorLosses_x']
 
     generator_network.load_state_dict(model['Generator'])
     optimizer_generator.load_state_dict(model['GeneratorOptimizer'])
     generator_losses = model['GeneratorLosses']
+    generator_losses_x = model['GeneratorLosses_x']
 
     epoch = model['Epoch']
+    iterations = model['Iterations']
+    
     discriminator_network.eval()
     generator_network.eval()
     print("\n model #" + modeChoice + " loaded")
@@ -184,14 +189,13 @@ for epoch in range(epoch, num_epochs+1):
         # Forward pass real batch through Discriminator
         output = discriminator_network(real_image).view(-1)
 
-        if (learningChoice != 'y'):
-            # Calculate loss on all-real batch
-            discriminator_loss_real = loss_function(output, label)
+        # Calculate loss on all-real batch
+        discriminator_loss_real = loss_function(output, label)
 
-            # Calculate gradients for Discriminator in backward pass
-            discriminator_loss_real.backward()
+        # Calculate gradients for Discriminator in backward pass
+        discriminator_loss_real.backward()
 
-            discriminator_real_input_confidence = output.mean().item()
+        discriminator_real_input_confidence = output.mean().item()
 
         ## Train with all-fake batch
         # Generate batch of latent vectors
@@ -204,23 +208,23 @@ for epoch in range(epoch, num_epochs+1):
         # Classify all fake batch with Discriminator
         output = discriminator_network(fake.detach()).view(-1)
 
+        # Calculate Discriminator's loss on the all-fake batch
+        discriminator_loss_fake = loss_function(output, label)
+    
+        # Calculate the gradients for this batch, accumulated (summed) with previous gradients
+        discriminator_loss_fake.backward()
+        discriminator_fake_input_confidence_1 = output.mean().item()
+
+        # Compute error of Discriminator as sum over the fake and the real batches
+        discriminator_loss = discriminator_loss_real + discriminator_loss_fake
+
         if (learningChoice != 'y'):
-            # Calculate Discriminator's loss on the all-fake batch
-            discriminator_loss_fake = loss_function(output, label)
-        
-            # Calculate the gradients for this batch, accumulated (summed) with previous gradients
-            discriminator_loss_fake.backward()
-            discriminator_fake_input_confidence_1 = output.mean().item()
-
-            # Compute error of Discriminator as sum over the fake and the real batches
-            discriminator_loss = discriminator_loss_real + discriminator_loss_fake
-
             # Update Discriminator
             optimizer_discriminator.step()
 
-            ############################
-            # (2) Update G network: maximize log(D(G(z)))
-            ###########################
+        ############################
+        # (2) Update G network: maximize log(D(G(z)))
+        ###########################
 
         generator_network.zero_grad()
         label.fill_(real_label)  # fake labels are real for generator cost
@@ -228,14 +232,14 @@ for epoch in range(epoch, num_epochs+1):
         # Since we just updated Discriminator, perform another forward pass of all-fake batch through Discriminator
         output = discriminator_network(fake).view(-1)
 
+        # Calculate G's loss based on this output
+        generator_loss = loss_function(output, label)
+
+        # Calculate gradients for G
+        generator_loss.backward()
+        discriminator_fake_input_confidence_2 = output.mean().item()
+
         if (learningChoice != 'y'):
-            # Calculate G's loss based on this output
-            generator_loss = loss_function(output, label)
-
-            # Calculate gradients for G
-            generator_loss.backward()
-            discriminator_fake_input_confidence_2 = output.mean().item()
-
             # Update G
             optimizer_generator.step()
 
@@ -249,10 +253,19 @@ for epoch in range(epoch, num_epochs+1):
                     discriminator_real_input_confidence,
                     discriminator_fake_input_confidence_1,
                     discriminator_fake_input_confidence_2))
+            # For time stamps
+            now = datetime.now()
+            current_time = now.strftime("%H:%M:%S")
+            print("Current Time =", current_time)
+
         elif i % iters_between_updates == 0:
             print('[%5d/%5d][%5d/%5d]'
                 % (epoch, num_epochs, i, len(dataloader),
                     ))
+            # For time stamps
+            now = datetime.now()
+            current_time = now.strftime("%H:%M:%S")
+            print("Current Time =", current_time)
 
         # Save Losses for plotting later
         generator_losses.append(generator_loss.item())
@@ -309,18 +322,21 @@ for epoch in range(epoch, num_epochs+1):
 
         iterations += 1
 
-    # model saver
+    # Saves the model and more
     if(epoch % epochsPerSave == 0):
         #torch.save(model.state_dict(), 'model_weights.pth' + str(i))
         torch.save({
         'Discriminator': discriminator_network.state_dict(),
         'DiscriminatorOptimizer': optimizer_discriminator.state_dict(),
         'DiscriminatorLosses': discriminator_losses,
+        'DiscriminatorLosses_x': discriminator_losses_x,
 
         'Generator': generator_network.state_dict(),
         'GeneratorOptimizer': optimizer_generator.state_dict(),
         'GeneratorLosses': generator_losses,
+        'GeneratorLosses_x': generator_losses_x,
 
-        'Epoch': epoch,
+        'Epoch': epoch+1,
+        'Iterations': iterations,
 
         }, 'Models\\Model' + str(epoch) + '.pth')

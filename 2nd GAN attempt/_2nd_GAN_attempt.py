@@ -164,7 +164,7 @@ if (modeChoice != ''):
     generator_network.eval()
     print("\n model #" + modeChoice + " loaded")
 
-#
+# Used to run model without learning
 print("Disable learning? (y/n)")
 learningChoice = input()
 

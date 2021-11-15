@@ -17,7 +17,7 @@ from datetime import datetime
 from IPython.display import HTML
 
 # Root directory for dataset
-dataroot = "C:\\Users\\Silas Bachmann\\Downloads\\archive"
+dataroot = "C:\\Users\\Anders\\source\\repos\\data\\celeba"
 # Batch size during training
 batch_size = 64
 
@@ -44,7 +44,7 @@ beta1_hyperparam = 0.5
 iters_between_updates = 80
 
 # Number of iterations to wait before showing graphs
-iters_between_each_graph = 994*1
+iters_between_each_graph = 3166*5
 
 # Number of epochs inbetween model saves
 epochsPerSave = 1
@@ -288,7 +288,8 @@ for epoch in range(epoch, num_epochs+1):
             plt.xlabel("Epochs")
             plt.ylabel("Loss")
             plt.legend()
-            plt.show()
+            #plt.show()
+            plt.savefig("images/plot_%d.png" % iterations, normalize = True)
 
             # %%capture
             # fig = plt.figure(figsize=(8, 8))
@@ -318,7 +319,8 @@ for epoch in range(epoch, num_epochs+1):
             plt.imshow(
                 np.transpose(torchvision.utils.make_grid(img_list[-1].to(device)[:64], padding=10, normalize=True).cpu(),
                         (1, 2, 0)))
-            plt.show()
+            #plt.show()
+            plt.savefig("images/%d.png" % iterations, normalize = True)
 
         iterations += 1
 

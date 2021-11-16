@@ -17,7 +17,7 @@ from datetime import datetime
 from IPython.display import HTML
 
 # Root directory for dataset
-dataroot = "C:\\Users\\Silas Bachmann\\Downloads\\archive"
+dataroot = "C:\\Users\\Anders\\source\\repos\\data\\Fruits_360\\Training"
 # Batch size during training
 batch_size = 64
 
@@ -56,7 +56,7 @@ beta1_hyperparam = 0.5
 iters_between_updates = 50
 
 # Number of epochs to wait before showing graphs
-iters_between_each_graph = 1583*5
+iters_between_each_graph = 480
 
 # Number of epochs inbetween model saves
 epochsPerSave = 1
@@ -207,7 +207,7 @@ learningChoice = input()
 
 print("Starting Training Loop...")
 
-for epoch in range(epoch, num_epochs+1):
+for epoch in range(epochs, num_epochs+1):
     # For each batch in the dataloader
     for i, data in enumerate(dataloader, 0):
 

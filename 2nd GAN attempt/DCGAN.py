@@ -320,9 +320,9 @@ for epoch in range(epochs, num_epochs+1):
         if (iterations % iters_between_each_graph == iters_between_each_graph-1) or ((epoch == num_epochs - 1) and (i == len(dataloader) - 1)):
             plt.figure(figsize=(10, 5))
             plt.title("Generator and Discriminator Loss During Training")
-            plt.plot(generator_losses, label="G")
-            plt.plot(discriminator_losses, label="D")
-            plt.xlabel("iterations")
+            plt.plot(generator_losses_x, generator_losses, label="G")
+            plt.plot(discriminator_losses_x, discriminator_losses, label="D")
+            plt.xlabel("Epochs")
             plt.ylabel("Loss")
             plt.legend()
             #plt.show()

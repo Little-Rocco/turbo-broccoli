@@ -262,8 +262,9 @@ for epoch in range(epoch, num_epochs+1):
                     discriminator_fake_input_confidence_2))
             # For time stamps
             now = datetime.now()
-            current_time = now.strftime("%H:%M:%S")
+            current_time = now.strftime("%H:%M:%S | %d-%m-%y")
             print("Current Time =", current_time)
+            
 
         elif i % iters_between_updates == 0:
             print('[%5d/%5d][%5d/%5d]'
@@ -271,8 +272,9 @@ for epoch in range(epoch, num_epochs+1):
                     ))
             # For time stamps
             now = datetime.now()
-            current_time = now.strftime("%H:%M:%S")
+            current_time = now.strftime("%H:%M:%S | %d-%m-%y")
             print("Current Time =", current_time)
+
 
         # Save Losses for plotting later
         generator_losses.append(generator_loss.item())
@@ -296,7 +298,7 @@ for epoch in range(epoch, num_epochs+1):
             plt.ylabel("Loss")
             plt.legend()
             #plt.show()
-            plt.savefig("images/plot_%d.png" % iterations, normalize = True)
+            plt.savefig("images/plot" + str(epoch) + "_" + now.strftime("%d-%m-%y") + ".png", normalize = True)
 
             # %%capture
             # fig = plt.figure(figsize=(8, 8))
@@ -327,7 +329,7 @@ for epoch in range(epoch, num_epochs+1):
                 np.transpose(torchvision.utils.make_grid(img_list[-1].to(device)[:64], padding=10, normalize=True).cpu(),
                         (1, 2, 0)))
             #plt.show()
-            plt.savefig("images/%d.png" % iterations, normalize = True)
+            plt.savefig("images/" + str(epoch) + "_" + now.strftime("%d-%m-%y") + ".png", normalize = True)
 
         iterations += 1
 

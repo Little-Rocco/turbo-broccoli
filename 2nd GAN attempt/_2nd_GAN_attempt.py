@@ -17,7 +17,7 @@ from datetime import datetime
 from IPython.display import HTML
 
 # Root directory for dataset
-dataroot = "C:\\Users\\Anders\\source\\repos\\data\\celeba"
+dataroot = "C:\\Users\\Silas Bachmann\\Downloads\\archive\\"
 # Batch size during training
 batch_size = 64
 
@@ -26,7 +26,7 @@ batch_size = 64
 image_size = 64
 
 # Number of channels in the training images. For color images this is 3
-colour_channels = 1
+colour_channels = 3
 
 # Size of z latent vector (i.e. size of generator input)
 gen_input_nodes = 100
@@ -44,21 +44,50 @@ beta1_hyperparam = 0.5
 iters_between_updates = 80
 
 # Number of iterations to wait before showing graphs
-iters_between_each_graph = 3166*5
+iters_between_each_graph = 438*1
 
 # Number of epochs inbetween model saves
 epochsPerSave = 1
 
-dataset = torchvision.datasets.ImageFolder(root=dataroot,
+# dataset = torchvision.datasets.ImageFolder(root=dataroot,
+#                                            transform=torchvision.transforms.Compose([
+#                                                torchvision.transforms.Grayscale(num_output_channels=1),
+#                                                torchvision.transforms.Resize(image_size),
+#                                                torchvision.transforms.CenterCrop(image_size),
+#                                                torchvision.transforms.ToTensor(),
+#                                                torchvision.transforms.Normalize((0.5), (0.5)),
+#                                            ]))
+
+train_dataset = torchvision.datasets.ImageFolder(root= dataroot + "\\TrainData",
                                            transform=torchvision.transforms.Compose([
-                                               torchvision.transforms.Grayscale(num_output_channels=1),
                                                torchvision.transforms.Resize(image_size),
                                                torchvision.transforms.CenterCrop(image_size),
                                                torchvision.transforms.ToTensor(),
                                                torchvision.transforms.Normalize((0.5), (0.5)),
                                            ]))
 
-dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)
+test_dataset = torchvision.datasets.ImageFolder(root=dataroot + "\\TestData",
+                                           transform=torchvision.transforms.Compose([
+                                               torchvision.transforms.Resize(image_size),
+                                               torchvision.transforms.CenterCrop(image_size),
+                                               torchvision.transforms.ToTensor(),
+                                               torchvision.transforms.Normalize((0.5), (0.5)),
+                                           ]))           
+
+print("Enter the number of the model you want to load, else just press enter for training")
+modeChoice = input()
+
+
+
+#DataLoader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)
+
+# Used to run model without learning
+print("Disable learning? (y/n)")
+learningChoice = input()
+
+if (modeChoice != ''):
+    dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+else: dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 iters_per_epoch = (math.ceil(len(dataloader.dataset.imgs)/batch_size))
 
 # Decide which device we want to run on
@@ -141,9 +170,6 @@ epoch = 0
 
 
 # Loads a saved checkpoint
-print("Enter the number of the model you want to load, else just press enter for training")
-modeChoice = input()
-
 if (modeChoice != ''):
     model = torch.load('Models\\Model' + modeChoice + '.pth')
     
@@ -164,9 +190,6 @@ if (modeChoice != ''):
     generator_network.eval()
     print("\n model #" + modeChoice + " loaded")
 
-# Used to run model without learning
-print("Disable learning? (y/n)")
-learningChoice = input()
 
 # -------- Training Loop ----------
 print("Starting Loop...")

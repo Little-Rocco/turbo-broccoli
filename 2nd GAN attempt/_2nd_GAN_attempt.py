@@ -44,35 +44,34 @@ beta1_hyperparam = 0.5
 iters_between_updates = 80
 
 # Number of iterations to wait before showing graphs
-iters_between_each_graph = 438*1
+iters_between_each_graph = 696*1
 
 # Number of epochs inbetween model saves
 epochsPerSave = 1
 
-# dataset = torchvision.datasets.ImageFolder(root=dataroot,
+dataset = torchvision.datasets.ImageFolder(root=dataroot,
+                                            transform=torchvision.transforms.Compose([
+                                                torchvision.transforms.Resize(image_size),
+                                                torchvision.transforms.CenterCrop(image_size),
+                                                torchvision.transforms.ToTensor(),
+                                                torchvision.transforms.Normalize((0.5), (0.5)),
+                                            ]))
+
+# train_dataset = torchvision.datasets.ImageFolder(root= dataroot + "\\TrainData",
 #                                            transform=torchvision.transforms.Compose([
-#                                                torchvision.transforms.Grayscale(num_output_channels=1),
 #                                                torchvision.transforms.Resize(image_size),
 #                                                torchvision.transforms.CenterCrop(image_size),
 #                                                torchvision.transforms.ToTensor(),
 #                                                torchvision.transforms.Normalize((0.5), (0.5)),
 #                                            ]))
 
-train_dataset = torchvision.datasets.ImageFolder(root= dataroot + "\\TrainData",
-                                           transform=torchvision.transforms.Compose([
-                                               torchvision.transforms.Resize(image_size),
-                                               torchvision.transforms.CenterCrop(image_size),
-                                               torchvision.transforms.ToTensor(),
-                                               torchvision.transforms.Normalize((0.5), (0.5)),
-                                           ]))
-
-test_dataset = torchvision.datasets.ImageFolder(root=dataroot + "\\TestData",
-                                           transform=torchvision.transforms.Compose([
-                                               torchvision.transforms.Resize(image_size),
-                                               torchvision.transforms.CenterCrop(image_size),
-                                               torchvision.transforms.ToTensor(),
-                                               torchvision.transforms.Normalize((0.5), (0.5)),
-                                           ]))           
+# test_dataset = torchvision.datasets.ImageFolder(root=dataroot + "\\TestData",
+#                                            transform=torchvision.transforms.Compose([
+#                                                torchvision.transforms.Resize(image_size),
+#                                                torchvision.transforms.CenterCrop(image_size),
+#                                                torchvision.transforms.ToTensor(),
+#                                                torchvision.transforms.Normalize((0.5), (0.5)),
+#                                            ]))           
 
 print("Enter the number of the model you want to load, else just press enter for training")
 modeChoice = input()
@@ -85,10 +84,17 @@ modeChoice = input()
 print("Disable learning? (y/n)")
 learningChoice = input()
 
-if (modeChoice != ''):
+train_size = int(0.7 * len(dataset))
+test_size = len(dataset) - train_size
+train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
+
+
+if (learningChoice != 'y'):
     dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-else: dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
-iters_per_epoch = (math.ceil(len(dataloader.dataset.imgs)/batch_size))
+    iters_per_epoch = (train_size/batch_size)
+else: 
+    dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+    iters_per_epoch = (test_size/batch_size)
 
 # Decide which device we want to run on
 device = "cpu"

@@ -57,37 +57,17 @@ dataset = torchvision.datasets.ImageFolder(root=dataroot,
                                                 torchvision.transforms.Normalize((0.5), (0.5)),
                                             ]))
 
-# train_dataset = torchvision.datasets.ImageFolder(root= dataroot + "\\TrainData",
-#                                            transform=torchvision.transforms.Compose([
-#                                                torchvision.transforms.Resize(image_size),
-#                                                torchvision.transforms.CenterCrop(image_size),
-#                                                torchvision.transforms.ToTensor(),
-#                                                torchvision.transforms.Normalize((0.5), (0.5)),
-#                                            ]))
-
-# test_dataset = torchvision.datasets.ImageFolder(root=dataroot + "\\TestData",
-#                                            transform=torchvision.transforms.Compose([
-#                                                torchvision.transforms.Resize(image_size),
-#                                                torchvision.transforms.CenterCrop(image_size),
-#                                                torchvision.transforms.ToTensor(),
-#                                                torchvision.transforms.Normalize((0.5), (0.5)),
-#                                            ]))           
-
 print("Enter the number of the model you want to load, else just press enter for training")
 modeChoice = input()
 
-
-
-#DataLoader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)
-
-# Used to run model without learning
-print("Disable learning? (y/n)")
-learningChoice = input()
-
+# Divides the dataset in into train and test
 train_size = int(0.7 * len(dataset))
 test_size = len(dataset) - train_size
 train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
 
+# Used to run model without learning
+print("Disable learning? (y/n)")
+learningChoice = input()
 
 if (learningChoice != 'y'):
     dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -125,7 +105,6 @@ class Generator(torch.nn.Module):
         return logits
         
 generator_network = Generator().to(device)
-# print(generator_network)
 
 class Discriminator(torch.nn.Module):
     def __init__(self):
@@ -146,7 +125,6 @@ class Discriminator(torch.nn.Module):
         return logits
 
 discriminator_network = Discriminator().to(device)
-# print(discriminator_network)
 
 loss_function = torch.nn.BCELoss()
 

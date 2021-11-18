@@ -1,3 +1,21 @@
+# Documentation
+# install for IPython: https://ipython.org/install.html 
+# "hack" to allow for loading sibling packages: https://stackoverflow.com/questions/6323860/sibling-package-imports/50193944#50193944
+# 
+# end of documentation
+
+
+#the hack for loading sibling packages
+if __name__ == "__main__" and __package__ is None:
+    from sys import path
+    from os.path import dirname as dir
+
+    path.append(dir(path[0]))
+    __package__ = "examples"
+
+import Utility
+
+
 import argparse
 import os
 import numpy as np

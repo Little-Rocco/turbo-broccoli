@@ -13,8 +13,7 @@ if __name__ == "__main__" and __package__ is None:
     path.append(dir(path[0]))
     __package__ = "examples"
     
-from Utility.graphHelper import graphHelper as graph
-#print(graph.test());
+from Utility.graphHelper import *
 
 #reset path and package
 path.pop()
@@ -60,14 +59,14 @@ parser.add_argument("--img_size", type=int, default=64, help="size of each image
 parser.add_argument("--channels", type=int, default=3, help="number of image channels")
 parser.add_argument("--n_critic", type=int, default=1, help="number of training steps for discriminator per iter")
 parser.add_argument("--clip_value", type=float, default=0.01, help="lower and upper clip value for disc. weights")
-parser.add_argument("--sample_interval", type=int, default=1000, help="interval betwen image samples")
+parser.add_argument("--sample_interval", type=int, default=100, help="interval betwen image samples")
 
 opt = parser.parse_args()
 print(opt)
 
 img_shape = (opt.channels, opt.img_size, opt.img_size)
 
-dataroot = "C:\\Users\\frede\\OneDrive\\Skrivebord\\Datasets\\Data\\img_align_celeba"
+dataroot = "C:\\Users\\Anders\\source\\repos\\data\\Fruits_360\\Training"
 
 dataset = torchvision.datasets.ImageFolder(root=dataroot,
                                            transform=torchvision.transforms.Compose([
@@ -78,6 +77,7 @@ dataset = torchvision.datasets.ImageFolder(root=dataroot,
                                            ]))
 
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batch_size, shuffle=True)
+iters_per_epoch = (math.ceil(len(dataloader.dataset.imgs)/opt.batch_size))
 
 cuda = True if torch.cuda.is_available() else False
 
@@ -177,9 +177,13 @@ Tensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 #  Training
 # ----------
 #Lists for plotting
+gen_imgs = []
 generator_losses = []
+generator_losses_x = []
 discriminator_losses = []
+discriminator_losses_x = []
 real_losses = []
+real_losses_x = []
 
 batches_done = 0
 accuracy_real, accuracy_fake = 0, 0
@@ -227,9 +231,9 @@ for epoch in range(opt.n_epochs):
             optimizer_G.zero_grad()
 
             # Generate a batch of images
-            gen_imgs = generator(z)
+            gen_imgs.append(generator(z))
             # Adversarial loss
-            loss_G = -torch.mean(discriminator(gen_imgs))
+            loss_G = -torch.mean(discriminator(gen_imgs[-1]))
 
             loss_G.backward()
             optimizer_G.step()
@@ -259,39 +263,32 @@ for epoch in range(opt.n_epochs):
         discriminator_losses.append(loss_D.item())
         real_losses.append(real_loss.item())
 
+        generator_losses_x.append(batches_done / iters_per_epoch)
+        discriminator_losses_x.append(batches_done / iters_per_epoch)
+        real_losses_x.append(batches_done / iters_per_epoch)
+
         
 
         if batches_done % opt.sample_interval == 0:
             real_batch = next(iter(dataloader))
 
-            plt.figure(figsize=(15, 15))
-            plt.subplot(1, 2, 1)
-            plt.axis("off")
-            plt.title("Real Images")
-            plt.imshow(
-                np.transpose(torchvision.utils.make_grid(real_batch[0][:64], padding=5, normalize=True).cpu(),
-                         (1, 2, 0)))
+            #save graph for loss
+            g_loss_curve = curve(generator_losses_x, generator_losses, "Generator Loss (D(G(z)))")
+            d_loss_curve = curve(discriminator_losses_x, discriminator_losses, "Critic Loss, Fake (D(x) - D(G(z)))")
+            d_loss_curve = curve(real_losses_x, real_losses, "Critic Loss, Real (D(x))")
+            loss_graph = graph([g_loss_curve, d_loss_curve], "Epochs", "Loss", "Generator and Discriminator Loss During Training")
+            saver.saveGraph(loss_graph,
+                            directory="images",
+                            filename="plot_%d.png" % batches_done)
 
-            # Plot the fake images from the last epoch
-            plt.subplot(1, 2, 2)
-            plt.axis("off")
-            plt.title("Fake Images")
-            plt.imshow(
-                np.transpose(torchvision.utils.make_grid(gen_imgs[:64], padding=5, normalize=True).cpu(),
-                         (1, 2, 0)))
-            plt.savefig("images/%d.png" % batches_done, normalize = True)
 
-            
-            plt.figure(figsize=(10, 5))
+            # Grab a batch of real images from the dataloader
+            real_batch = next(iter(dataloader))
 
-            plt.title("Loss During Training")
-            plt.plot(generator_losses, label="Generator Loss (D(G(z)))")
-            plt.plot(discriminator_losses, label="Critic Loss, Fake (D(x) - D(G(z)))")
-            plt.plot(real_losses, label="Critic Loss, Real (D(x))")
-
-            plt.xlabel("iterations")
-            plt.ylabel("Loss")
-            plt.legend()
-            plt.savefig("images/plot_%d.png" % batches_done, normalize = True)
+            # save the images
+            saver.saveImages(real_batch, gen_imgs,
+                             directory="images", 
+                             filename="%d.png" % batches_done,
+                             device="cpu")
 
         batches_done += 1

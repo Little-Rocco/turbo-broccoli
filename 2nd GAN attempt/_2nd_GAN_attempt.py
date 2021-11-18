@@ -13,8 +13,7 @@ if __name__ == "__main__" and __package__ is None:
     path.append(dir(path[0]))
     __package__ = "examples"
 
-from Utility.graphHelper import graphHelper as graph
-#print(graph.test());
+from Utility.graphHelper import *
 
 #reset path and package
 path.pop()
@@ -67,7 +66,7 @@ beta1_hyperparam = 0.5
 iters_between_updates = 80
 
 # Number of iterations to wait before showing graphs
-iters_between_each_graph = 100
+iters_between_each_graph = 100 #696*1
 
 # Number of epochs inbetween model saves
 epochsPerSave = 1
@@ -322,46 +321,24 @@ for epoch in range(epoch, num_epochs+1):
 
         # Show graphs
         if (iterations % iters_between_each_graph == iters_between_each_graph-1) or ((epoch == num_epochs - 1) and (i == len(dataloader) - 1)):
-            plt.figure(figsize=(10, 5))
-            plt.title("Generator and Discriminator Loss During Training")
-            plt.plot(generator_losses_x, generator_losses, label="G")
-            plt.plot(discriminator_losses_x, discriminator_losses, label="D")
-            plt.xlabel("Epochs")
-            plt.ylabel("Loss")
-            plt.legend()
-            #plt.show()
-            plt.savefig("images/plot" + str(epoch) + "_" + now.strftime("%d-%m-%y") + ".png", normalize = True)
+            
+            #save graph for loss
+            g_loss_curve = curve(generator_losses_x, generator_losses, "G")
+            d_loss_curve = curve(discriminator_losses_x, discriminator_losses, "D")
+            loss_graph = graph([g_loss_curve, d_loss_curve], "Epochs", "Loss", "Generator and Discriminator Loss During Training")
+            saver.saveGraph(loss_graph,
+                            directory="images",
+                            filename="plot" + str(iterations) + "_" + now.strftime("%d-%m-%y") + ".png")
 
-            # %%capture
-            # fig = plt.figure(figsize=(8, 8))
-            # plt.axis("off")
-            # ims = [[plt.imshow(np.transpose(i, (1, 2, 0)), animated=True)] for i in img_list]
-            # ani = animation.ArtistAnimation(fig, ims, interval=1000, repeat_delay=1000, blit=True)
-
-            # HTML(ani.to_jshtml())
-            # plt.show()
 
             # Grab a batch of real images from the dataloader
             real_batch = next(iter(dataloader))
 
-            # Plot the real images
-            plt.figure(figsize=(15, 15))
-            plt.subplot(1, 2, 1)
-            plt.axis("off")
-            plt.title("Real Images")
-            plt.imshow(
-                np.transpose(torchvision.utils.make_grid(real_batch[0].to(device)[:64], padding=5, normalize=True).cpu(),
-                        (1, 2, 0)))
-
-            # Plot the fake images from the last epoch
-            plt.subplot(1, 2, 2)
-            plt.axis("off")
-            plt.title("Fake Images")
-            plt.imshow(
-                np.transpose(torchvision.utils.make_grid(img_list[-1].to(device)[:64], padding=10, normalize=True).cpu(),
-                        (1, 2, 0)))
-            #plt.show()
-            plt.savefig("images/" + str(epoch) + "_" + now.strftime("%d-%m-%y") + ".png", normalize = True)
+            # save the images
+            saver.saveImages(real_batch, img_list,
+                             directory="images", 
+                             filename=str(iterations) + "_" + now.strftime("%d-%m-%y") + ".png",
+                             device=device)
 
         iterations += 1
 

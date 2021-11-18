@@ -16,6 +16,10 @@ if __name__ == "__main__" and __package__ is None:
 from Utility.graphHelper import graphHelper as graph
 #print(graph.test());
 
+#reset path and package
+path.pop()
+__package__ = None
+
 
 
 import argparse

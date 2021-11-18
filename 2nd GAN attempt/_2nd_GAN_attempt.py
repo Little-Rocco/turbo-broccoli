@@ -16,6 +16,10 @@ if __name__ == "__main__" and __package__ is None:
 from Utility.graphHelper import graphHelper as graph
 #print(graph.test());
 
+#reset path and package
+path.pop()
+__package__ = None
+
 
 
 from pickle import FALSE
@@ -36,7 +40,7 @@ from IPython.display import HTML
 # print("Current working directory: {0}".format(cwd))
 
 # Root directory for dataset
-dataroot = "C:\\Users\\Silas Bachmann\\Downloads\\archive\\"
+dataroot = "C:\\Users\\Anders\\source\\repos\\data\\celeba"
 # Batch size during training
 batch_size = 64
 
@@ -63,7 +67,7 @@ beta1_hyperparam = 0.5
 iters_between_updates = 80
 
 # Number of iterations to wait before showing graphs
-iters_between_each_graph = 696*1
+iters_between_each_graph = 100
 
 # Number of epochs inbetween model saves
 epochsPerSave = 1
@@ -357,7 +361,7 @@ for epoch in range(epoch, num_epochs+1):
                 np.transpose(torchvision.utils.make_grid(img_list[-1].to(device)[:64], padding=10, normalize=True).cpu(),
                         (1, 2, 0)))
             #plt.show()
-            plt.savefig("2nd GAN attempt/images/" + str(epoch) + "_" + now.strftime("%d-%m-%y") + ".png", normalize = True)
+            plt.savefig("images/" + str(epoch) + "_" + now.strftime("%d-%m-%y") + ".png", normalize = True)
 
         iterations += 1
 

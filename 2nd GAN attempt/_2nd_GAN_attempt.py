@@ -16,6 +16,11 @@ import math
 from datetime import datetime
 from IPython.display import HTML
 
+# --Use this if you struggle with figuring out where models and images are saved--
+# import os
+# cwd = os.getcwd()
+# print("Current working directory: {0}".format(cwd))
+
 # Root directory for dataset
 dataroot = "C:\\Users\\Silas Bachmann\\Downloads\\archive\\"
 # Batch size during training
@@ -60,10 +65,14 @@ dataset = torchvision.datasets.ImageFolder(root=dataroot,
 print("Enter the number of the model you want to load, else just press enter for training")
 modeChoice = input()
 
+# initializes a seed
+seed = torch.Generator().seed()
+print("Current seed: " + str(seed))
+
 # Divides the dataset in into train and test
 train_size = int(0.7 * len(dataset))
 test_size = len(dataset) - train_size
-train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
+train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size], generator=torch.Generator().manual_seed(seed))
 
 # Used to run model without learning
 print("Disable learning? (y/n)")
@@ -172,6 +181,11 @@ if (modeChoice != ''):
     
     discriminator_network.eval()
     generator_network.eval()
+
+    # Uncomment to find the seed used in a given model
+    #seed = model['Seed']
+    #print("Seed used on this epoch: " + str(seed))
+    
     print("\n model #" + modeChoice + " loaded")
 
 
@@ -329,7 +343,7 @@ for epoch in range(epoch, num_epochs+1):
                 np.transpose(torchvision.utils.make_grid(img_list[-1].to(device)[:64], padding=10, normalize=True).cpu(),
                         (1, 2, 0)))
             #plt.show()
-            plt.savefig("images/" + str(epoch) + "_" + now.strftime("%d-%m-%y") + ".png", normalize = True)
+            plt.savefig("2nd GAN attempt/images/" + str(epoch) + "_" + now.strftime("%d-%m-%y") + ".png", normalize = True)
 
         iterations += 1
 
@@ -349,5 +363,7 @@ for epoch in range(epoch, num_epochs+1):
 
         'Epoch': epoch+1,
         'Iterations': iterations,
+
+        'Seed': seed,
 
         }, 'Models\\Model' + str(epoch) + '.pth')

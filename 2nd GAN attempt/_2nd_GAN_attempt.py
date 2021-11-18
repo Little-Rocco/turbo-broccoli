@@ -13,7 +13,8 @@ if __name__ == "__main__" and __package__ is None:
     path.append(dir(path[0]))
     __package__ = "examples"
 
-import Utility
+from Utility.graphHelper import graphHelper as graph
+#print(graph.test());
 
 
 

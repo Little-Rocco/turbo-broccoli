@@ -59,8 +59,10 @@ parser.add_argument("--ndf",        type=int,   default=64,     help="Size of fe
 parser.add_argument("--img_size",   type=int,   default=64,     help="size of each image dimension")
 parser.add_argument("--channels",   type=int,   default=3,      help="number of image channels")
 parser.add_argument("--n_critic",   type=int,   default=1,      help="number of training steps for discriminator per iter")
-parser.add_argument("--clip_value", type=float, default=0.01,   help="lower and upper clip value for disc. weights")
+parser.add_argument("--clip_value", type=float, default=0.01,   help="lower and upper clip value for disc. weights. (-1 = no clipping)")
 parser.add_argument("--sample_interval", type=int,  default=100,    help="interval betwen image samples")
+#add argument: update_interval
+#add argument: epochs_per_save
 
 opt = parser.parse_args()
 print(opt)
@@ -269,9 +271,9 @@ for epoch in range(opt.n_epochs):
 
             #save graph for loss
             g_loss_curve = curve(generator_losses_x, generator_losses, "Generator Loss (D(G(z)))")
-            d_loss_curve = curve(discriminator_losses_x, discriminator_losses, "Critic Loss, Fake (D(x) - D(G(z)))")
-            d_loss_curve = curve(real_losses_x, real_losses, "Critic Loss, Real (D(x))")
-            loss_graph = graph([g_loss_curve, d_loss_curve], "Epochs", "Loss", "Generator and Discriminator Loss During Training")
+            d_loss_curve1 = curve(discriminator_losses_x, discriminator_losses, "Critic Loss, Fake (D(x) - D(G(z)))")
+            d_loss_curve2 = curve(real_losses_x, real_losses, "Critic Loss, Real (D(x))")
+            loss_graph = graph([g_loss_curve, d_loss_curve1, d_loss_curve2], "Epochs", "Loss", "Generator and Discriminator Loss During Training")
             saver.saveGraph(loss_graph,
                             directory="images",
                             filename="plot_%d.png" % batches_done)

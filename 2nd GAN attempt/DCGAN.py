@@ -14,6 +14,7 @@ if __name__ == "__main__" and __package__ is None:
     __package__ = "examples"
     
 from Utility.graphHelper import *
+from Utility.dataHelper import *
 
 #reset path and package
 path.pop()
@@ -78,13 +79,7 @@ iters_between_each_graph = 100 #480
 # Number of epochs inbetween model saves
 epochsPerSave = 1
 
-dataset = torchvision.datasets.ImageFolder(root=dataroot,
-                                           transform=torchvision.transforms.Compose([
-                                               torchvision.transforms.Resize(image_size),
-                                               torchvision.transforms.CenterCrop(image_size),
-                                               torchvision.transforms.ToTensor(),
-                                               torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-                                           ]))
+dataset = dataLoad.loadImages(dataroot, image_size)
 
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)
 iters_per_epoch = (math.ceil(len(dataloader.dataset.imgs)/batch_size))

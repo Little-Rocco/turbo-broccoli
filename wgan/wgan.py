@@ -14,6 +14,7 @@ if __name__ == "__main__" and __package__ is None:
     __package__ = "examples"
     
 from Utility.graphHelper import *
+from Utility.dataHelper import *
 
 #reset path and package
 path.pop()
@@ -68,13 +69,7 @@ img_shape = (opt.channels, opt.img_size, opt.img_size)
 
 dataroot = "C:\\Users\\Anders\\source\\repos\\data\\Fruits_360\\Training"
 
-dataset = torchvision.datasets.ImageFolder(root=dataroot,
-                                           transform=torchvision.transforms.Compose([
-                                               torchvision.transforms.Resize(opt.img_size),
-                                               torchvision.transforms.CenterCrop(opt.img_size),
-                                               torchvision.transforms.ToTensor(),
-                                               torchvision.transforms.Normalize([0.5], [0.5]),
-                                           ]))
+dataset = dataLoad.loadImages(dataroot, opt.img_size)
 
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batch_size, shuffle=True)
 iters_per_epoch = (math.ceil(len(dataloader.dataset.imgs)/opt.batch_size))

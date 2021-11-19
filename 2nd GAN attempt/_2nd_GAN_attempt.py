@@ -14,6 +14,7 @@ if __name__ == "__main__" and __package__ is None:
     __package__ = "examples"
 
 from Utility.graphHelper import *
+from Utility.dataHelper import *
 
 #reset path and package
 path.pop()
@@ -71,36 +72,29 @@ iters_between_each_graph = 100 #696*1
 # Number of epochs inbetween model saves
 epochsPerSave = 1
 
-dataset = torchvision.datasets.ImageFolder(root=dataroot,
-                                            transform=torchvision.transforms.Compose([
-                                                torchvision.transforms.Resize(image_size),
-                                                torchvision.transforms.CenterCrop(image_size),
-                                                torchvision.transforms.ToTensor(),
-                                                torchvision.transforms.Normalize((0.5), (0.5)),
-                                            ]))
 
-print("Enter the number of the model you want to load, else just press enter for training")
-modeChoice = input()
 
 # initializes a seed
 seed = torch.Generator().seed()
 print("Current seed: " + str(seed))
 
-# Divides the dataset in into train and test
-train_size = int(0.7 * len(dataset))
-test_size = len(dataset) - train_size
-train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size], generator=torch.Generator().manual_seed(seed))
+# Loads and divides the dataset in into train and test
+dataset = dataLoad.loadImages(dataroot, image_size)
+train_dataset, test_dataset = dataLoad.splitData(dataset, 0.7, seed)
+
+# Used to load models
+print("Enter the number of the model you want to load, else just press enter for training")
+modeChoice = input()
 
 # Used to run model without learning
 print("Disable learning? (y/n)")
 learningChoice = input()
-
 if (learningChoice != 'y'):
     dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    iters_per_epoch = (train_size/batch_size)
 else: 
     dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
-    iters_per_epoch = (test_size/batch_size)
+iters_per_epoch = (math.ceil(len(dataloader.dataset)/batch_size))
+
 
 # Decide which device we want to run on
 device = "cpu"
@@ -170,6 +164,7 @@ optimizer_generator = torch.optim.Adam(generator_network.parameters(), lr=learni
 
 
 # Lists to keep track of progress
+
 img_list = []
 generator_losses = []
 generator_losses_x = []

@@ -37,6 +37,7 @@ class saver:
         plt.xlabel(graph.xLabel)
         plt.ylabel(graph.yLabel)
         plt.savefig(fname)
+        plt.close()
 
 
     def saveImages(realImgs, fakeImgs, directory, filename, device):
@@ -56,7 +57,8 @@ class saver:
         plt.axis("off")
         plt.title("Fake Images")
         plt.imshow(
-            np.transpose(torchvision.utils.make_grid(fakeImgs[-1].to(device)[:64], padding=5, normalize=True).cpu(),
+            np.transpose(torchvision.utils.make_grid(fakeImgs[0].to(device)[:64], padding=5, normalize=True).cpu(),
                     (1, 2, 0)))
 
         plt.savefig(fname)
+        plt.close()

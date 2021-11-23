@@ -3,13 +3,17 @@ from .dataHelper import *
 
 import os
 import argparse
+import math
+import torch
+
+import numpy as np
 
 from torch.autograd import Variable
 from datetime import datetime
 
 
 
-class engine:
+class Engine:
 	opt = argparse.ArgumentParser()
 	dataroot = ""
 	dataset = None
@@ -18,14 +22,13 @@ class engine:
 	seed = 0
 	train_ratio = 0.0
 	def __init__(self, options, dataroot, seed, train_ratio):
-		self.opt = options.parse_args()
-		print(opt)
+		self.opt = options
 		self.dataroot = dataroot
 		self.seed = seed
 		self.train_ratio = train_ratio
 
-		self.dataset = dataLoad.loadImages(dataroot, opt.img_size)
-		# the outcommented is done in engine.enter_info()
+		self.dataset = dataLoad.loadImages(dataroot, self.opt.img_size)
+		# the outcommented is done in Engine.enter_info()
 		#self.dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batch_size, shuffle=True)
 		#self.iters_per_epoch = (math.ceil(len(dataloader.dataset.imgs)/opt.batch_size))
 		self.cuda = True if torch.cuda.is_available() else False
@@ -36,7 +39,7 @@ class engine:
 	def add_networks(self, generator, discriminator):
 		self.generator = generator
 		self.discriminator = discriminator
-		if cuda:
+		if self.cuda:
 			self.generator.cuda()
 			self.discriminator.cuda()
 
@@ -57,19 +60,21 @@ class engine:
 	losses_x = []
 	epochs_done = 0
 	iters_done = 0
+	current_iter = 0
 	accuracy_real, accuracy_fake = 0, 0
 	fixed_noise = None
+	Tensor = None
 	def run(self):
-		Tensor = torch.cuda.FloatTensor if self.cuda else torch.FloatTensor
+		self.Tensor = torch.cuda.FloatTensor if self.cuda else torch.FloatTensor
 		self.enter_info()
-		self.fixed_noise = torch.randn(64, gen_input_nodes, 1, 1, device=device)
+		self.fixed_noise = torch.randn(64, self.opt.latent_dim, 1, 1, device="cpu")
 		if (self.modeChoice != ''):
 			self.load_checkpoint()
 
 		# -------- Training Loop ----------
 		print("Starting Loop...")
-		for epoch in range(epochs_done, self.opt.n_epochs+1):
-			for i, (imgs, _) in enumerate(dataloader):
+		for epoch in range(self.epochs_done, self.opt.n_epochs+1):
+			for i, (imgs, _) in enumerate(self.dataloader):
 				# train discriminator
 				self.train_discriminator(imgs)
 
@@ -82,17 +87,22 @@ class engine:
 					self.print_update()
 
 				# append x values
-				self.losses_x.append(iters_done / iters_per_epoch)
+				self.losses_x.append(self.iters_done / self.iters_per_epoch)
 
 				# save graphs (and images)
-				if(batches_done % opt.sample_interval == 0):
+				if(i % self.opt.sample_interval == 0):
 					self.save_graphs()
 
 				self.iters_done += 1
+				self.current_iter += 1
+				self.gen_imgs = []
+
 			if(epoch % self.opt.epochs_per_save == 0):
-				self.save_checkpoint()
+				if(self.learningChoice != 'y'):
+					self.save_checkpoint()
 
 			self.epochs_done += 1
+			self.current_iter = 0
 
 
 	#####################################
@@ -112,10 +122,10 @@ class engine:
 		print("Disable learning? (y/n)")
 		self.learningChoice = input()
 		if (self.learningChoice != 'y'):
-			self.dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+			self.dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=self.opt.batch_size, shuffle=True)
 		else: 
-			self.dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
-		self.iters_per_epoch = (math.ceil(len(dataloader.dataset)/batch_size))
+			self.dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=self.opt.batch_size, shuffle=True)
+		self.iters_per_epoch = (math.ceil(len(self.dataloader.dataset)/self.opt.batch_size))
 
 
 
@@ -125,6 +135,7 @@ class engine:
 		self.discriminator.load_state_dict(model['Discriminator'])
 		self.optimizer_D.load_state_dict(model['DiscriminatorOptimizer'])
 		self.discriminator_losses = model['DiscriminatorLosses']
+		self.real_losses = model['RealLosses']
 
 		self.generator.load_state_dict(model['Generator'])
 		self.optimizer_G.load_state_dict(model['GeneratorOptimizer'])
@@ -153,6 +164,7 @@ class engine:
 			'Discriminator': self.discriminator.state_dict(),
 			'DiscriminatorOptimizer': self.optimizer_D.state_dict(),
 			'DiscriminatorLosses': self.discriminator_losses,
+			'RealLosses': self.real_losses,
 
 			'Generator': self.generator.state_dict(),
 			'GeneratorOptimizer': self.optimizer_G.state_dict(),
@@ -170,30 +182,30 @@ class engine:
 
 
 	z = None
+	real_batch_size = 0
 	def train_discriminator(self, imgs):
 		# Configure input
-		real_imgs = Variable(imgs.type(Tensor))
+		real_imgs = Variable(imgs.type(self.Tensor))
 
 		# get a label vector for true label
-		real_batch_size = real_imgs.size(0)
-		labels = torch.full((real_batch_size,), 1, dtype=torch.float, device=device)
+		self.real_batch_size = real_imgs.size(0)
+		device = "cuda:0" if self.cuda else "cpu"
+		labels = torch.full((self.real_batch_size,), 1, dtype=torch.float, device=device)
 
 		# use real data
 		self.optimizer_D.zero_grad()
-		real_preds = self.discriminator(real_imgs).view(-1)
+		real_preds = self.discriminator(real_imgs)
 		real_loss = self.loss_func(real_preds, labels)
-		self.real_losses.append(real_loss)
 
 		# use generated data
-		self.z = Variable(Tensor(np.random.normal(0, 1, (imgs.shape[0], self.opt.latent_dim, 1, 1))))
+		self.z = Variable(self.Tensor(np.random.normal(0, 1, (imgs.shape[0], self.opt.latent_dim, 1, 1))))
 		fake_imgs = self.generator(self.z).detach()
 		labels.fill_(0) #fake label
-		fake_preds = self.discriminator(fake_imgs).view(-1)
+		fake_preds = self.discriminator(fake_imgs)
 		fake_loss = self.loss_func(fake_preds, labels)
 
 		# combine
 		loss_D = real_loss + fake_loss
-		self.discriminator_losses.append(loss_D)
 
 		# optimize
 		if(self.learningChoice != 'y'):
@@ -202,6 +214,9 @@ class engine:
 			if(self.use_clipping()):
 				for p in self.discriminator.parameters():
 					p.data.clamp_(-self.opt.clip_value, self.opt.clip_value)
+					
+		self.real_losses.append(real_loss.item())
+		self.discriminator_losses.append(loss_D.item())
 
 
 	def use_clipping(self):
@@ -211,29 +226,31 @@ class engine:
 
 	def train_generator(self):
 		# fake labels are real for generator cost
-		labels = torch.full((real_batch_size,), 1, dtype=torch.float, device=device)
+		device = "cuda:0" if self.cuda else "cpu"
+		labels = torch.full((self.real_batch_size,), 1, dtype=torch.float, device=device)
 
 		# run generator
 		self.optimizer_G.zero_grad()
-		fake_imgs = self.generator(z)
+		fake_imgs = self.generator(self.z)
 		self.gen_imgs.append(fake_imgs)
-		loss_G = self.loss_func(fake_imgs, labels)
-		self.generator_losses.append(loss_G)
+		loss_G = self.loss_func(self.discriminator(fake_imgs), labels)
 
 		# optimize
 		if(self.learningChoice != 'y'):
 			loss_G.backward()
 			self.optimizer_G.step()
 
+		self.generator_losses.append(loss_G.item())
+
 
 
 	def print_update(self):
 		print('[%5d/%5d][%5d/%5d]\tD(x): %.4f\tCritic loss: %.4f\tGenerator loss: %.4f\t'
             % (self.epochs_done, self.opt.n_epochs,
-                i, len(self.dataloader),
+                self.current_iter, len(self.dataloader),
                 self.real_losses[-1],
-                self.discriminator_losses[-1].item(),
-                self.generator_losses[-1].item(),))
+                self.discriminator_losses[-1],
+                self.generator_losses[-1],))
         # For time stamps
 		now = datetime.now()
 		current_time = now.strftime("%H:%M:%S")
@@ -249,7 +266,7 @@ class engine:
 		loss_graph = graph([g_loss_curve, d_loss_curve1, d_loss_curve2], "Epochs", "Loss", "Generator and Discriminator Loss During Training")
 		saver.saveGraph(loss_graph,
                         directory="images",
-                        filename="plot_%d.png" % batches_done)
+                        filename="plot_%d.png" % self.iters_done)
 
         # Grab a batch of real images from the dataloader
 		real_batch = next(iter(self.dataloader))

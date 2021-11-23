@@ -190,7 +190,7 @@ class Engine:
 		# get a label vector for true label
 		self.real_batch_size = real_imgs.size(0)
 		device = "cuda:0" if self.cuda else "cpu"
-		labels = torch.full((self.real_batch_size,), 1, dtype=torch.float, device=device)
+		labels = torch.full((self.real_batch_size, 1, 1, 1), 1, dtype=torch.float, device=device)
 
 		# use real data
 		self.optimizer_D.zero_grad()
@@ -200,9 +200,9 @@ class Engine:
 		# use generated data
 		self.z = Variable(self.Tensor(np.random.normal(0, 1, (imgs.shape[0], self.opt.latent_dim, 1, 1))))
 		fake_imgs = self.generator(self.z).detach()
-		labels.fill_(0) #fake label
+		labels2 = torch.full((self.real_batch_size, 1, 1, 1), 0, dtype=torch.float, device=device)
 		fake_preds = self.discriminator(fake_imgs)
-		fake_loss = self.loss_func(fake_preds, labels)
+		fake_loss = self.loss_func(fake_preds, labels2)
 
 		# combine
 		loss_D = real_loss + fake_loss
@@ -227,7 +227,7 @@ class Engine:
 	def train_generator(self):
 		# fake labels are real for generator cost
 		device = "cuda:0" if self.cuda else "cpu"
-		labels = torch.full((self.real_batch_size,), 1, dtype=torch.float, device=device)
+		labels = torch.full((self.real_batch_size, 1, 1, 1), 1, dtype=torch.float, device=device)
 
 		# run generator
 		self.optimizer_G.zero_grad()

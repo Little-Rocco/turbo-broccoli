@@ -46,7 +46,7 @@ parser.add_argument("--n_critic",   type=int,   default=1,      help="number of 
 parser.add_argument("--clip_value", type=float, default=0.01,   help="lower and upper clip value for disc. weights. (-1 = no clipping)")
 parser.add_argument("--sample_interval", type=int,  default=100,    help="iters between image samples")
 parser.add_argument("--update_interval", type=int,  default=10,    help="iters between terminal updates")
-parser.add_argument("--epochs_per_save", type=int,  default=1,    help="epochs between model saves")
+parser.add_argument("--epochs_per_save", type=int,  default=5,    help="epochs between model saves")
 
 opt = parser.parse_args()
 print(opt)

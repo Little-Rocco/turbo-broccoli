@@ -36,6 +36,7 @@ class saver:
             plt.plot(c.xCoords, c.yCoords, label=c.label)
         plt.xlabel(graph.xLabel)
         plt.ylabel(graph.yLabel)
+        plt.legend()
         plt.savefig(fname)
         plt.close()
 

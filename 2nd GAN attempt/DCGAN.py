@@ -54,8 +54,8 @@ parser.add_argument("--img_size",   type=int,   default=64,     help="size of ea
 parser.add_argument("--channels",   type=int,   default=3,      help="number of image channels")
 parser.add_argument("--n_critic",   type=int,   default=1,      help="number of training steps for discriminator per iter")
 parser.add_argument("--clip_value", type=float, default=-1,   help="lower and upper clip value for disc. weights. (-1 = no clipping)")
-parser.add_argument("--sample_interval", type=int,  default=100,    help="iters between image samples")
-parser.add_argument("--update_interval", type=int,  default=80,    help="iters between terminal updates")
+parser.add_argument("--sample_interval", type=int,  default=50,    help="iters between image samples")
+parser.add_argument("--update_interval", type=int,  default=50,    help="iters between terminal updates")
 parser.add_argument("--epochs_per_save", type=int,  default=5,    help="epochs between model saves")
 
 opt = parser.parse_args()

@@ -31,17 +31,20 @@ class Engine:
 		# the outcommented is done in Engine.enter_info()
 		#self.dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batch_size, shuffle=True)
 		#self.iters_per_epoch = (math.ceil(len(dataloader.dataset.imgs)/opt.batch_size))
+		self.enter_info()
 		self.cuda = True if torch.cuda.is_available() else False
 
 
 	generator = None
 	discriminator = None
 	def add_networks(self, generator, discriminator):
+		device = "cuda:0" if self.cuda else "cpu"
+
 		self.generator = generator
 		self.discriminator = discriminator
 		if self.cuda:
-			self.generator.cuda()
-			self.discriminator.cuda()
+			self.generator.to(device)
+			self.discriminator.to(device)
 
 
 	optimizer_G = None
@@ -65,7 +68,6 @@ class Engine:
 	Tensor = None
 	def run(self):
 		self.Tensor = torch.cuda.FloatTensor if self.cuda else torch.FloatTensor
-		self.enter_info()
 		self.fixed_noise = torch.randn(64, self.opt.latent_dim, 1, 1, device="cpu")
 		if (self.modeChoice != ''):
 			self.load_checkpoint()
@@ -84,6 +86,7 @@ class Engine:
 				# print to terminal
 				if(i % self.opt.update_interval == 0):
 					self.print_update()
+					#print(self.optimizer_D.param_groups[0]['betas'])
 
 				# append x values
 				self.losses_x.append(self.iters_done / self.iters_per_epoch)
@@ -95,13 +98,14 @@ class Engine:
 				self.iters_done += 1
 				self.current_iter += 1
 				self.gen_imgs = []
+				
+			self.epochs_done += 1
+			self.current_iter = 0
 
-			if(epoch % self.opt.epochs_per_save == 0):
+			if(epoch % self.opt.epochs_per_save == self.opt.epochs_per_save-1):
 				if(self.learningChoice != 'y'):
 					self.save_checkpoint()
 
-			self.epochs_done += 1
-			self.current_iter = 0
 
 
 	#####################################
@@ -112,12 +116,13 @@ class Engine:
 	learningChoice = ""
 	iters_per_epoch = 0
 	def enter_info(self):
+		train_dataset, test_dataset = dataLoad.splitData(self.dataset, self.train_ratio, self.seed)
+
 		# Used to load models
 		print("Enter the number of the model you want to load, else just press enter for training")
 		self.modeChoice = input()
 
 		# Used to run model without learning
-		train_dataset, test_dataset = dataLoad.splitData(self.dataset, self.train_ratio, self.seed)
 		print("Disable learning? (y/n)")
 		self.learningChoice = input()
 		if (self.learningChoice != 'y'):
@@ -147,12 +152,14 @@ class Engine:
 		self.iters_done = model['Iterations']
 
 		self.seed = model['Seed']
+		self.fixed_noise = model['FixedNoise']
 		
-		self.discriminator.eval()
-		self.generator.eval()
-		if self.cuda:
-			self.generator.cuda()
-			self.discriminator.cuda()
+		if(self.learningChoice != 'y'):
+			self.discriminator.train()
+			self.generator.train()
+		else:
+			self.discriminator.eval()
+			self.generator.eval()
 
 		# Uncomment to find the seed used in a given model
 		#print("Seed used on this epoch: " + str(self.seed))
@@ -175,10 +182,11 @@ class Engine:
 			'Losses_x': self.losses_x,
 			'GenImgs': self.gen_imgs,
 
-			'Epoch': self.epochs_done+1,
+			'Epoch': self.epochs_done,
 			'Iterations': self.iters_done,
 
 			'Seed': self.seed,
+			'FixedNoise': self.fixed_noise,
         }, 
 		'Models\\Model' + str(self.epochs_done) + '.pth')
 
@@ -187,24 +195,26 @@ class Engine:
 	z = None
 	real_batch_size = 0
 	def train_discriminator(self, imgs):
+		self.optimizer_D.zero_grad()
+
 		# Configure input
 		real_imgs = Variable(imgs.type(self.Tensor))
 
 		# get a label vector for true label
 		self.real_batch_size = real_imgs.size(0)
 		device = "cuda:0" if self.cuda else "cpu"
-		labels = torch.full((self.real_batch_size, 1, 1, 1), 1, dtype=torch.float, device=device)
+		labels = torch.full((self.real_batch_size,), 1, dtype=torch.float, device=device)
 
 		# use real data
-		self.optimizer_D.zero_grad()
-		real_preds = self.discriminator(real_imgs)
+		real_preds = self.discriminator(real_imgs).view(-1)
 		real_loss = self.loss_func(real_preds, labels)
 
 		# use generated data
 		self.z = Variable(self.Tensor(np.random.normal(0, 1, (imgs.shape[0], self.opt.latent_dim, 1, 1))))
-		fake_imgs = self.generator(self.z).detach()
-		labels2 = torch.full((self.real_batch_size, 1, 1, 1), 0, dtype=torch.float, device=device)
-		fake_preds = self.discriminator(fake_imgs)
+		fake_imgs = self.generator(self.z)
+		self.gen_imgs.append(fake_imgs)
+		labels2 = torch.full((self.real_batch_size,), 0, dtype=torch.float, device=device)
+		fake_preds = self.discriminator(fake_imgs.detach()).view(-1)
 		fake_loss = self.loss_func(fake_preds, labels2)
 
 		# combine
@@ -228,15 +238,16 @@ class Engine:
 
 
 	def train_generator(self):
+		self.optimizer_G.zero_grad()
+
 		# fake labels are real for generator cost
 		device = "cuda:0" if self.cuda else "cpu"
-		labels = torch.full((self.real_batch_size, 1, 1, 1), 1, dtype=torch.float, device=device)
+		labels = torch.full((self.real_batch_size,), 1, dtype=torch.float, device=device)
 
 		# run generator
-		self.optimizer_G.zero_grad()
-		fake_imgs = self.generator(self.z)
-		self.gen_imgs.append(fake_imgs)
-		loss_G = self.loss_func(self.discriminator(fake_imgs), labels)
+		fake_imgs = self.gen_imgs[0]
+		output = self.discriminator(fake_imgs).view(-1)
+		loss_G = self.loss_func(output, labels)
 
 		# optimize
 		if(self.learningChoice != 'y'):

@@ -36,10 +36,6 @@ from datetime import datetime
 from IPython.display import HTML
 
 
-# Beta1 hyperparam for Adam optimizers - no touching!
-beta1_hyperparam = 0.5
-
-
 os.makedirs("images", exist_ok=True)
 
 parser = argparse.ArgumentParser()
@@ -47,16 +43,17 @@ parser.add_argument("--n_epochs",   type=int,   default=1000,   help="number of 
 parser.add_argument("--batch_size", type=int,   default=64,     help="size of the batches")
 parser.add_argument("--lr",         type=float, default=0.0002, help="learning rate")
 parser.add_argument("--n_cpu",      type=int,   default=8,      help="number of cpu threads to use during batch generation")
-parser.add_argument("--latent_dim", type=int,   default=100,     help="dimensionality of the latent space")
+parser.add_argument("--latent_dim", type=int,   default=100,    help="dimensionality of the latent space")
 parser.add_argument("--ngf",        type=int,   default=64,     help="Size of feature maps in generator")
 parser.add_argument("--ndf",        type=int,   default=64,     help="Size of feature maps in discriminator")
 parser.add_argument("--img_size",   type=int,   default=64,     help="size of each image dimension")
 parser.add_argument("--channels",   type=int,   default=3,      help="number of image channels")
 parser.add_argument("--n_critic",   type=int,   default=1,      help="number of training steps for discriminator per iter")
-parser.add_argument("--clip_value", type=float, default=-1,   help="lower and upper clip value for disc. weights. (-1 = no clipping)")
+parser.add_argument("--clip_value", type=float, default=-1,     help="lower and upper clip value for disc. weights. (-1 = no clipping)")
 parser.add_argument("--sample_interval", type=int,  default=100,    help="iters between image samples")
-parser.add_argument("--update_interval", type=int,  default=50,    help="iters between terminal updates")
-parser.add_argument("--epochs_per_save", type=int,  default=1,    help="epochs between model saves")
+parser.add_argument("--update_interval", type=int,  default=50,     help="iters between terminal updates")
+parser.add_argument("--epochs_per_save", type=int,  default=1,      help="epochs between model saves")
+parser.add_argument("--beta1",      type=float, default=0.5,    help="beta1 hyperparameter for Adam optimizer")
 
 opt = parser.parse_args()
 print(opt)
@@ -138,10 +135,10 @@ engine.add_networks(Generator(), Discriminator())
 loss_function = torch.nn.BCELoss()
 
 # Setup Adam optimizers for both G and D
-optimizer_discriminator = torch.optim.Adam(engine.discriminator.parameters(), lr=opt.lr,
-                                           betas=(beta1_hyperparam, 0.999))
-optimizer_generator = torch.optim.Adam(engine.generator.parameters(), lr=opt.lr,
-                                       betas=(beta1_hyperparam, 0.999))
+optimizer_discriminator = torch.optim.Adam(engine.discriminator.parameters(), lr=engine.opt.lr,
+                                           betas=(engine.opt.beta1, 0.999))
+optimizer_generator = torch.optim.Adam(engine.generator.parameters(), lr=engine.opt.lr,
+                                       betas=(engine.opt.beta1, 0.999))
 
 
 

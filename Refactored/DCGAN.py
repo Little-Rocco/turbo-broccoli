@@ -12,17 +12,9 @@ from Utility.Engine import *
 
 
 
+import argparse
+import os
 import torch
-import torch.cuda
-import torchvision.models as models
-import torch.utils.data
-import torchvision
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-import numpy as np
-import math
-from datetime import datetime
-from IPython.display import HTML
 
 
 os.makedirs("images", exist_ok=True)
@@ -41,7 +33,7 @@ parser.add_argument("--n_critic",   type=int,   default=1,      help="number of 
 parser.add_argument("--clip_value", type=float, default=-1,     help="lower and upper clip value for disc. weights. (-1 = no clipping)")
 parser.add_argument("--sample_interval", type=int,  default=100,    help="iters between image samples")
 parser.add_argument("--update_interval", type=int,  default=50,     help="iters between terminal updates")
-parser.add_argument("--epochs_per_save", type=int,  default=1,      help="epochs between model saves")
+parser.add_argument("--epochs_per_save", type=int,  default=5,      help="epochs between model saves")
 parser.add_argument("--beta1",      type=float, default=0.5,    help="beta1 hyperparameter for Adam optimizer")
 
 opt = parser.parse_args()
@@ -52,7 +44,7 @@ dataroot = "C:\\Users\\Anders\\source\\repos\\data\\Fruits_360\\Training"
 seed = torch.Generator().seed()
 print("Current seed: " + str(seed))
 
-engine = Engine(opt, dataroot, seed, 0.2)
+engine = Engine(opt, dataroot, seed, 0.7)
 
 
 

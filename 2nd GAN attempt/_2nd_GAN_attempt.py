@@ -15,7 +15,7 @@ if __name__ == "__main__" and __package__ is None:
 
 from Utility.graphHelper import *
 from Utility.dataHelper import *
-from Utility.engine import *
+from Utility.Engine import *
 
 #reset path and package
 path.pop()
@@ -65,7 +65,7 @@ learning_rate = 0.0002
 beta1_hyperparam = 0.5
 
 # Number of iterations to wait before printing updates
-iters_between_updates = 80
+iters_between_updates = 50
 
 # Number of iterations to wait before showing graphs
 iters_between_each_graph = 100 #696*1
@@ -191,6 +191,7 @@ if (modeChoice != ''):
 
     epoch = model['Epoch']
     iterations = model['Iterations']
+    img_list = model['GenImgs']
     
     discriminator_network.eval()
     generator_network.eval()
@@ -354,6 +355,7 @@ for epoch in range(epoch, num_epochs+1):
 
         'Epoch': epoch+1,
         'Iterations': iterations,
+		'GenImgs': img_list,
 
         'Seed': seed,
 

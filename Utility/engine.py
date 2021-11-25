@@ -61,7 +61,6 @@ class Engine:
 	epochs_done = 0
 	iters_done = 0
 	current_iter = 0
-	accuracy_real, accuracy_fake = 0, 0
 	fixed_noise = None
 	Tensor = None
 	def run(self):
@@ -142,6 +141,7 @@ class Engine:
 		self.generator_losses = model['GeneratorLosses']
 
 		self.losses_x = model['Losses_x']
+		self.gen_imgs = model['GenImgs']
 
 		self.epochs_done = model['Epoch']
 		self.iters_done = model['Iterations']
@@ -150,10 +150,12 @@ class Engine:
 		
 		self.discriminator.eval()
 		self.generator.eval()
+		if self.cuda:
+			self.generator.cuda()
+			self.discriminator.cuda()
 
 		# Uncomment to find the seed used in a given model
-		#seed = model['Seed']
-		#print("Seed used on this epoch: " + str(seed))
+		#print("Seed used on this epoch: " + str(self.seed))
 		
 		print("\n model #" + self.modeChoice + " loaded")
 
@@ -171,6 +173,7 @@ class Engine:
 			'GeneratorLosses': self.generator_losses,
 
 			'Losses_x': self.losses_x,
+			'GenImgs': self.gen_imgs,
 
 			'Epoch': self.epochs_done+1,
 			'Iterations': self.iters_done,

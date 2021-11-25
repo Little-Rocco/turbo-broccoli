@@ -7,7 +7,7 @@ class dataLoad:
 		if(grayscale):
 			dataset = torchvision.datasets.ImageFolder(root=dataroot,
 											  transform=torchvision.transforms.Compose([
-												  torchvision.transforms.grayscale(),
+												  torchvision.transforms.Grayscale(),
 												  torchvision.transforms.Resize(image_size),
 												  torchvision.transforms.CenterCrop(image_size),
 												  torchvision.transforms.ToTensor(),

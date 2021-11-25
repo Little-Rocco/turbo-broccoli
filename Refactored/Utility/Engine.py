@@ -27,7 +27,8 @@ class Engine:
 		self.seed = seed
 		self.train_ratio = train_ratio
 
-		self.dataset = dataLoad.loadImages(dataroot, self.opt.img_size)
+		isGrayscale = self.opt.channels == 1
+		self.dataset = dataLoad.loadImages(dataroot, self.opt.img_size, isGrayscale)
 		# the outcommented is done in Engine.enter_info()
 		#self.dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batch_size, shuffle=True)
 		#self.iters_per_epoch = (math.ceil(len(dataloader.dataset.imgs)/opt.batch_size))

@@ -36,6 +36,7 @@ parser.add_argument("--clip_value", type=float, default=0.01,   help="lower and 
 parser.add_argument("--sample_interval", type=int,  default=100,    help="iters between image samples")
 parser.add_argument("--update_interval", type=int,  default=10,    help="iters between terminal updates")
 parser.add_argument("--epochs_per_save", type=int,  default=5,    help="epochs between model saves")
+parser.add_argument("--split_disc_loss", type=bool,  default=True,    help="whether to split discriminator loss into real/fake")
 
 opt = parser.parse_args()
 print(opt)

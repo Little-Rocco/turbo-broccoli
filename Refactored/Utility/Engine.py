@@ -59,6 +59,7 @@ class Engine:
 
 	gen_imgs = []
 	real_losses = []
+	fake_losses = []
 	generator_losses = []
 	discriminator_losses = []
 	losses_x = []
@@ -213,7 +214,6 @@ class Engine:
 		# use generated data
 		self.z = Variable(self.Tensor(np.random.normal(0, 1, (imgs.shape[0], self.opt.latent_dim, 1, 1))))
 		fake_imgs = self.generator(self.z)
-		self.gen_imgs.append(fake_imgs)
 		labels2 = torch.full((self.real_batch_size,), 0, dtype=torch.float, device=device)
 		fake_preds = self.discriminator(fake_imgs.detach()).view(-1)
 		fake_loss = self.loss_func(fake_preds, labels2)
@@ -229,7 +229,9 @@ class Engine:
 				for p in self.discriminator.parameters():
 					p.data.clamp_(-self.opt.clip_value, self.opt.clip_value)
 					
+		self.gen_imgs.append(fake_imgs)
 		self.real_losses.append(real_loss.item())
+		self.fake_losses.append(fake_loss.item())
 		self.discriminator_losses.append(loss_D.item())
 
 
@@ -275,10 +277,17 @@ class Engine:
 
 	def save_graphs(self):
         #save graph for loss
-		g_loss_curve = curve(self.losses_x, self.generator_losses, "Generator Loss (D(G(z)))")
-		d_loss_curve1 = curve(self.losses_x, self.discriminator_losses, "Critic Loss, Fake (D(x) - D(G(z)))")
-		d_loss_curve2 = curve(self.losses_x, self.real_losses, "Critic Loss, Real (D(x))")
-		loss_graph = graph([g_loss_curve, d_loss_curve1, d_loss_curve2], "Epochs", "Loss", "Generator and Discriminator Loss During Training")
+		loss_graph = None
+		if(self.opt.split_disc_loss):
+			g_loss_curve = curve(self.losses_x, self.generator_losses, "Generator Loss (D(G(z)))")
+			d_loss_curve2 = curve(self.losses_x, self.real_losses, "Critic Loss, Real (D(x))")
+			d_loss_curve1 = curve(self.losses_x, self.discriminator_losses, "Critic Loss, Fake (D(x) - D(G(z)))")
+			loss_graph = graph([g_loss_curve, d_loss_curve1, d_loss_curve2], "Epochs", "Loss", "Generator and Discriminator Loss During Training")
+		else:
+			g_loss_curve = curve(self.losses_x, self.generator_losses, "G")
+			d_loss_curve = curve(self.losses_x, self.discriminator_losses, "D")
+			loss_graph = graph([g_loss_curve, d_loss_curve], "Epochs", "Loss", "Generator and Discriminator Loss During Training")
+			
 		saver.saveGraph(loss_graph,
                         directory="images",
                         filename="plot_%d.png" % self.iters_done)

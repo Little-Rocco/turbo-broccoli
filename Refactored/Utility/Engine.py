@@ -310,6 +310,5 @@ class Engine:
 							real_batch, 
 							self.generator(self.fixed_noise),
                             directory="images", 
-                            filename="%d.png" % self.iters_done,
-                            device="cpu"
-		)
+							filename = str(self.epochs_done) + "e_" + str(self.iters_done) + "i.png",
+                            device="cpu")

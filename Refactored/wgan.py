@@ -5,10 +5,9 @@
 # end of documentation
 
 
-
-from Utility.graphHelper import *
-from Utility.dataHelper import *
-from Utility.Engine import *
+import Utility.dataHelper
+import Utility.graphHelper
+import Utility.Engine as E
 
 
 
@@ -46,7 +45,7 @@ dataroot = "C:\\Users\\Anders\\source\\repos\\data\\Fruits_360\\Training"
 seed = torch.Generator().seed()
 print("Current seed: " + str(seed))
 
-engine = Engine(opt, dataroot, seed, 0.7)
+engine = E.Engine(opt, dataroot, seed, 0.7)
 
 
 class Generator(nn.Module):

@@ -5,10 +5,14 @@
 # end of documentation
 
 
+import Utility.dataHelper
+import Utility.graphHelper
+import Utility.Engine as E
 
-from Utility.graphHelper import *
-from Utility.dataHelper import *
-from Utility.Engine import *
+
+#from Utility.graphHelper import *
+#from Utility.dataHelper import *
+#from Utility.Engine import *
 
 
 
@@ -34,7 +38,7 @@ parser.add_argument("--clip_value", type=float, default=-1,     help="lower and 
 parser.add_argument("--sample_interval", type=int,  default=100,    help="iters between image samples")
 parser.add_argument("--update_interval", type=int,  default=50,     help="iters between terminal updates")
 parser.add_argument("--epochs_per_save", type=int,  default=5,      help="epochs between model saves")
-parser.add_argument("--split_disc_loss", type=bool,  default=False,  help="whether to split discriminator loss into real/fake")
+parser.add_argument("--split_disc_loss", type=bool, default=False,  help="whether to split discriminator loss into real/fake")
 parser.add_argument("--beta1",      type=float, default=0.5,    help="beta1 hyperparameter for Adam optimizer")
 
 opt = parser.parse_args()
@@ -45,7 +49,7 @@ dataroot = "C:\\Users\\Anders\\source\\repos\\data\\Fruits_360\\Training"
 seed = torch.Generator().seed()
 print("Current seed: " + str(seed))
 
-engine = Engine(opt, dataroot, seed, 0.7)
+engine = E.Engine(opt, dataroot, seed, 0.7)
 
 
 

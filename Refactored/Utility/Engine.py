@@ -104,6 +104,7 @@ class Engine:
 			self.epochs_done += 1
 			self.current_iter = 0
 
+			# Model saving
 			if(epoch % self.opt.epochs_per_save == self.opt.epochs_per_save-1):
 				if(self.learningChoice != 'y'):
 					self.save_checkpoint()
@@ -170,6 +171,11 @@ class Engine:
 
 
 	def save_checkpoint(self):
+		device = "cuda:0" if self.cuda else "cpu"
+		if(self.cuda):
+			self.discriminator.to("cpu")
+			self.generator.to("cpu")
+
         #torch.save(model.state_dict(), 'model_weights.pth' + str(i))
 		torch.save({
 			'Discriminator': self.discriminator.state_dict(),
@@ -191,7 +197,10 @@ class Engine:
 			'FixedNoise': self.fixed_noise,
         }, 
 		'Models\\Model' + str(self.epochs_done) + '.pth')
-
+		
+		if(self.cuda):
+			self.discriminator.to(device)
+			self.generator.to(device)
 
 
 	z = None

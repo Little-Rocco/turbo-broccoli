@@ -5,10 +5,9 @@
 # end of documentation
 
 
-
-from Utility.graphHelper import *
-from Utility.dataHelper import *
-from Utility.Engine import *
+import Utility.dataHelper
+import Utility.graphHelper
+import Utility.Engine as E
 
 
 
@@ -45,7 +44,7 @@ dataroot = "C:\\Users\\Anders\\source\\repos\\data\\shapes"
 seed = torch.Generator().seed()
 print("Current seed: " + str(seed))
 
-engine = Engine(opt, dataroot, seed, 0.7)
+engine = E.Engine(opt, dataroot, seed, 0.7)
 
 
 
@@ -57,7 +56,13 @@ class Generator(torch.nn.Module):
             # the neural network
             torch.nn.Linear(opt.latent_dim, 256),
             torch.nn.ReLU(),
-            torch.nn.Linear(256, opt.img_size * opt.img_size * opt.channels),
+            torch.nn.Linear(256, 512),
+            torch.nn.ReLU(),
+            torch.nn.Linear(512, 1024),
+            torch.nn.ReLU(),
+            torch.nn.Linear(1024, 2048),
+            torch.nn.ReLU(),
+            torch.nn.Linear(2048, opt.img_size * opt.img_size * opt.channels),
             torch.nn.Tanh(),
         )
 
@@ -72,8 +77,10 @@ class Discriminator(torch.nn.Module):
         super(Discriminator, self).__init__()
         self.flatten = torch.nn.Flatten()
         self.linear_relu_stack = torch.nn.Sequential(
-            torch.nn.Linear(opt.img_size * opt.img_size * opt.channels, 256),
-            torch.nn.ReLU(),
+            torch.nn.Linear(opt.img_size * opt.img_size * opt.channels, 512),
+            torch.nn.LeakyReLU(0.2, inplace=True),
+            torch.nn.Linear(512, 256),
+            torch.nn.LeakyReLU(0.2, inplace=True),
             torch.nn.Linear(256, 1),
             torch.nn.Sigmoid(),
         )

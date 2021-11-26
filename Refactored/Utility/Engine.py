@@ -278,6 +278,7 @@ class Engine:
 	def save_graphs(self):
         #save graph for loss
 		loss_graph = None
+
 		if(self.opt.split_disc_loss):
 			g_loss_curve = curve(self.losses_x, self.generator_losses, "Generator Loss (D(G(z)))")
 			d_loss_curve2 = curve(self.losses_x, self.real_losses, "Critic Loss, Real (D(x))")
@@ -296,7 +297,10 @@ class Engine:
 		real_batch = next(iter(self.dataloader))
 
         # save the images
-		saver.saveImages(real_batch, self.gen_imgs,
+		saver.saveImages(
+							real_batch, 
+							self.generator(self.fixed_noise),
                             directory="images", 
                             filename="%d.png" % self.iters_done,
-                            device="cpu")
+                            device="cpu"
+		)

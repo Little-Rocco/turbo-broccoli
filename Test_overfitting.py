@@ -1,17 +1,9 @@
-#to-do: add a range for when we want to observe if two images are similar
-
 # NOTE: Before you can run it you need to make sure you have the below packages
 #           - opencv (imported as cv2)
 #               - using pip: https://www.tutorialspoint.com/how-to-install-opencv-in-python
 #               - using conda: conda install -c conda-forge opencv
 #           - scikit-image (imported as skimage)
 #               - https://scikit-image.org/docs/dev/install.html
-
-#folder containing the generated images
-generated_images = "C:\\Users\\fred7\\PycharmProjects\\turbo-broccoli\\2nd GAN attempt\\generated images"
-
-#folder containing the CelebA faces dataset
-real_images = "C:\\Users\\fred7\\Documents\\GitHub\\turbo-broccoli\\CelebA dataset\\img_align_celeba"
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -24,6 +16,16 @@ from skimage.metrics import structural_similarity as ssim
 
 #used for resizing
 import cv2
+
+#folder containing the generated images
+generated_images = "C:\\Users\\Frederik\\Documents\\GitHub\\turbo-broccoli\\test"
+
+#folder containing the CelebA faces dataset
+real_images = "C:\\Users\\Frederik\\Documents\\GitHub\\turbo-broccoli\\celebafaces\\img_align_celeba\\img_align_celeba"
+
+# values for checking the desired range of similarity between the real and generated images
+checkM = 3000
+checkS = 0.8
 
 #calculates the mean squared error between two images - sum of the squared difference between the two images
 def mean_squared_error(imageA, imageB):
@@ -45,21 +47,20 @@ def compare_images(imageA, imageB, title):
     #calculate structural similarity
     s = ssim(res1, res2, multichannel=True)
 
-    #setup the figure
-    fig = plt.figure(title)
-    plt.suptitle("MSE: %.2f, SSIM: %.2f" % (m, s))
+    if m <= checkM or s >= checkS:
+        #setup the figure
+        fig = plt.figure(title)
+        plt.suptitle("MSE: %.2f, SSIM: %.2f" % (m, s))
 
-    #show first image
-    ax = fig.add_subplot(1, 2, 1)
-    plt.imshow(imageA, cmap=plt.cm.gray)
-    plt.axis("off")
+        #show first image
+        ax = fig.add_subplot(1, 2, 1)
+        plt.imshow(imageA, cmap=plt.cm.gray)
+        plt.axis("off")
 
-    #show the second image
-    ax = fig.add_subplot(1, 2, 2)
-    plt.imshow(imageB, cmap=plt.cm.gray)
-    plt.axis("off")
-
-    plt.show
+        #show the second image
+        ax = fig.add_subplot(1, 2, 2)
+        plt.imshow(imageB, cmap=plt.cm.gray)
+        plt.axis("off")
 
 #iterate over real and generated images
 for file_name1 in os.listdir(real_images):
@@ -73,18 +74,10 @@ for file_name1 in os.listdir(real_images):
         filepath2 = os.path.join(real_images, file_name1)
         image02 = io.imread(filepath2)
 
-        #create a tuble that we can iterate through - here a title of the specific image is specified too
-        fig = plt.figure("Images")
-        images = ("generated image", image01), ("real_image", image02)
+        plt.show()
 
-        #loop over the tuble containging the generated and real images
-        for (i, (name, image)) in enumerate(images):
+        #prints the below message for every comparison
+        print("I am still runnning :)")
 
-            ax = fig.add_subplot(1, 3, i + 1)
-            ax.set_title(name)
-            plt.imshow(image, cmap = plt.cm.gray)
-            plt.axis("off")
-            plt.show()
-
-            #compare the generated and real images
-            compare_images(image01, image02, "generated image vs. real image")
+        #compare the generated and real images
+        compare_images(image01, image02, "generated image vs. real image")

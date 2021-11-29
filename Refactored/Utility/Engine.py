@@ -66,11 +66,14 @@ class Engine:
 	epochs_done = 0
 	iters_done = 0
 	current_iter = 0
-	fixed_noise = None
+	fixed_noise = []
 	Tensor = None
 	def run(self):
 		self.Tensor = torch.cuda.FloatTensor if self.cuda else torch.FloatTensor
-		self.fixed_noise = torch.randn(64, self.opt.latent_dim, 1, 1, device="cpu")
+		
+		for x in range(64):
+			self.fixed_noise.append(torch.randn(64, self.opt.latent_dim, 1, 1, device="cpu"))
+
 		if (self.modeChoice != ''):
 			self.load_checkpoint()
 
@@ -305,10 +308,13 @@ class Engine:
         # Grab a batch of real images from the dataloader
 		real_batch = next(iter(self.dataloader))
 
+		savedImagesList = []
+		for x in range(64):
+			savedImagesList.append(self.generator(self.fixed_noise[x]))
+
         # save the images
 		saver.saveImages(
-							real_batch, 
-							self.generator(self.fixed_noise),
+							real_batch, savedImagesList,
                             directory="images", 
 							filename = str(self.epochs_done) + "e_" + str(self.iters_done) + "i.png",
                             device="cpu")

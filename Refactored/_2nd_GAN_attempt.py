@@ -27,7 +27,7 @@ parser.add_argument("--latent_dim", type=int,   default=100,    help="dimensiona
 parser.add_argument("--ngf",        type=int,   default=64,     help="Size of feature maps in generator")
 parser.add_argument("--ndf",        type=int,   default=64,     help="Size of feature maps in discriminator")
 parser.add_argument("--img_size",   type=int,   default=64,     help="size of each image dimension")
-parser.add_argument("--channels",   type=int,   default=1,      help="number of image channels")
+parser.add_argument("--channels",   type=int,   default=3,      help="number of image channels")
 parser.add_argument("--n_critic",   type=int,   default=1,      help="number of training steps for discriminator per iter")
 parser.add_argument("--clip_value", type=float, default=-1,     help="lower and upper clip value for disc. weights. (-1 = no clipping)")
 parser.add_argument("--sample_interval", type=int,  default=200,    help="iters between image samples")
@@ -40,7 +40,7 @@ opt = parser.parse_args()
 print(opt)
 
 
-dataroot = "C:\\Users\\Anders\\source\\repos\\data\\shapes"
+dataroot = "C:\\Users\\hejle\\Documents\\Development\\Python\data\\img_align_celeba"
 seed = torch.Generator().seed()
 print("Current seed: " + str(seed))
 

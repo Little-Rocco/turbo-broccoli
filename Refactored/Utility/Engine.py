@@ -310,7 +310,7 @@ class Engine:
 			
 		saver.saveGraph(loss_graph,
                         directory="images",
-                        filename="plot_%d.png" % self.iters_done)
+                        filename="plot" + str(self.epochs_done) + "e_" + str(self.iters_done) + "i.png")
 
         # Grab a batch of real images from the dataloader
 		real_batch = next(iter(self.dataloader))

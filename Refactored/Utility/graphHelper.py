@@ -58,7 +58,7 @@ class saver:
         plt.axis("off")
         plt.title("Fake Images")
         plt.imshow(
-            np.transpose(torchvision.utils.make_grid(fakeImgs[0].to(device)[:64], padding=5, normalize=True).cpu(),
+            np.transpose(torchvision.utils.make_grid(fakeImgs[:64], padding=5, normalize=True).cpu(),
                     (1, 2, 0)))
 
         plt.savefig(fname)

@@ -45,7 +45,7 @@ opt = parser.parse_args()
 print(opt)
 
 
-dataroot = "C:\\Users\\Anders\\source\\repos\\data\\Fruits_360\\Training"
+dataroot = "C:\\Users\\Anders\\source\\repos\\data\\anime_faces"
 seed = torch.Generator().seed()
 print("Current seed: " + str(seed))
 

@@ -309,8 +309,9 @@ class Engine:
 		real_batch = next(iter(self.dataloader))
 
 		savedImagesList = []
+		device = "cuda:0" if self.cuda else "cpu"
 		for x in range(64):
-			savedImagesList.append(self.generator(self.fixed_noise[x]))
+			savedImagesList.append(self.generator(self.fixed_noise[x].to(device)))
 
         # save the images
 		saver.saveImages(

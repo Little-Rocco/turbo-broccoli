@@ -40,7 +40,7 @@ opt = parser.parse_args()
 print(opt)
 
 
-dataroot = "C:\\Users\\hejle\\Documents\\Development\\Python\data\\img_align_celeba"
+dataroot = "C:\\Users\\Anders\\source\\repos\\data\\Shapes"
 seed = torch.Generator().seed()
 print("Current seed: " + str(seed))
 

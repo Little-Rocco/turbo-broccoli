@@ -63,3 +63,13 @@ class saver:
 
         plt.savefig(fname)
         plt.close()
+
+
+    def saveImage(img, directory, filename, device):
+        fname = directory + os.path.sep + filename
+
+        plt.figure(figsize=(10, 10))
+        img_0 = img[0].to(device)
+        plt.imshow(np.transpose(img_0, (0, 1)), cmap="gray")
+        plt.savefig(fname)
+        plt.close()

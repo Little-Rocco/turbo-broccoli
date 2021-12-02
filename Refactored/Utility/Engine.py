@@ -120,6 +120,7 @@ class Engine:
 
 	modeChoice = ""
 	learningChoice = ""
+	individualImagesChoice = ""
 	iters_per_epoch = 0
 	def enter_info(self):
 		train_dataset, test_dataset = dataLoad.splitData(self.dataset, self.train_ratio, self.seed)
@@ -135,6 +136,8 @@ class Engine:
 			self.dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=self.opt.batch_size, shuffle=True)
 		else: 
 			self.dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=self.opt.batch_size, shuffle=True)
+			print("    Save individual images? (y/n)")
+			self.individualImagesChoice = input()
 		self.iters_per_epoch = (math.ceil(len(self.dataloader.dataset)/self.opt.batch_size))
 
 
@@ -166,6 +169,10 @@ class Engine:
 		else:
 			self.discriminator.eval()
 			self.generator.eval()
+
+		device = "cuda:0" if self.cuda else "cpu"
+		self.discriminator.to(device)
+		self.generator.to(device)
 
 		# Uncomment to find the seed used in a given model
 		#print("Seed used on this epoch: " + str(self.seed))
@@ -303,18 +310,41 @@ class Engine:
 			
 		saver.saveGraph(loss_graph,
                         directory="images",
-                        filename="plot_%d.png" % self.iters_done)
+                        filename="plot" + str(self.epochs_done) + "e_" + str(self.iters_done) + "i.png")
 
         # Grab a batch of real images from the dataloader
 		real_batch = next(iter(self.dataloader))
 
 		savedImagesList = []
+		device = "cuda:0" if self.cuda else "cpu"
 		for x in range(64):
-			savedImagesList.append(self.generator(self.fixed_noise[x]))
+			savedImagesList.append(self.generator(self.fixed_noise[x].to(device))[0])
 
-        # save the images
-		saver.saveImages(
-							real_batch, savedImagesList,
-                            directory="images", 
-							filename = str(self.epochs_done) + "e_" + str(self.iters_done) + "i.png",
-                            device="cpu")
+
+		if(self.individualImagesChoice != "y"):
+			# save the images
+			saver.saveImages(
+								real_batch, savedImagesList,
+								directory="images", 
+								filename = str(self.epochs_done) + "e_" + str(self.iters_done) + "i.png",
+								device="cpu")
+		else:
+			# save real images
+			i = 0
+			for img in real_batch[0]:
+				saver.saveImage(
+							img,
+							directory="images" + os.path.sep + "individual_real",
+							filename = str(self.epochs_done) + "e_" + str(self.iters_done) + "i_" + str(i) + "real.png",
+							device="cpu")
+				i += 1
+
+			# save fake images
+			i = 0
+			for img in savedImagesList:
+				saver.saveImage(
+							img.detach(),
+							directory="images" + os.path.sep + "individual_fake",
+							filename = str(self.epochs_done) + "e_" + str(self.iters_done) + "i_" + str(i) + "fake.png",
+							device="cpu")
+				i += 1

@@ -58,8 +58,18 @@ class saver:
         plt.axis("off")
         plt.title("Fake Images")
         plt.imshow(
-            np.transpose(torchvision.utils.make_grid(fakeImgs[0].to(device)[:64], padding=5, normalize=True).cpu(),
+            np.transpose(torchvision.utils.make_grid(fakeImgs[:64], padding=5, normalize=True).cpu(),
                     (1, 2, 0)))
 
+        plt.savefig(fname)
+        plt.close()
+
+
+    def saveImage(img, directory, filename, device):
+        fname = directory + os.path.sep + filename
+
+        plt.figure(figsize=(10, 10))
+        img_0 = img[0].to(device)
+        plt.imshow(np.transpose(img_0, (0, 1)), cmap="gray")
         plt.savefig(fname)
         plt.close()

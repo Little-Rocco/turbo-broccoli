@@ -9,9 +9,11 @@ import torch
 import numpy as np
 
 from torch.autograd import Variable
+from datetime import datetime as dt, timedelta
+import datetime
 from datetime import datetime
 
-
+time_stamps = []
 
 class Engine:
 	opt = argparse.ArgumentParser()
@@ -111,6 +113,16 @@ class Engine:
 			if(epoch % self.opt.epochs_per_save == self.opt.epochs_per_save-1):
 				if(self.learningChoice != 'y'):
 					self.save_checkpoint()
+
+		#finds the total amount of time elapsed from first to last epoch
+		last_timestamp = dt.strptime(time_stamps[-1], '%H:%M:%S')
+		first_timestamp = dt.strptime(time_stamps[0], '%H:%M:%S')
+		time_elapsed = last_timestamp - first_timestamp
+		print("Total amount of time elapsed:", time_elapsed)
+
+		#Calculate and print average computation time for 1 epoch out of n_epochs
+		avg = time_elapsed.total_seconds() / self.opt.n_epochs
+		print("Average time elapsed for one epoch:", str(timedelta(seconds=avg)))
 
 
 
@@ -287,10 +299,13 @@ class Engine:
                 self.real_losses[-1],
                 self.discriminator_losses[-1],
                 self.generator_losses[-1],))
-        # For time stamps
+
+		# For time stamps
 		now = datetime.now()
 		current_time = now.strftime("%H:%M:%S")
 		print("Current Time =", current_time)
+
+		time_stamps.append(current_time)
 
 
 
@@ -325,7 +340,7 @@ class Engine:
 			# save the images
 			saver.saveImages(
 								real_batch, savedImagesList,
-								directory="images", 
+								directory="images",
 								filename = str(self.epochs_done) + "e_" + str(self.iters_done) + "i.png",
 								device="cpu")
 		else:

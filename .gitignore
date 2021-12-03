@@ -531,3 +531,5 @@ FodyWeavers.xsd
 
 # ----------------------end of Visual Studio gitignore stuff-----------------------
 *.png
+Refactored/_backup/LR=varying/LRs.txt
+Refactored/_backup/LR=varying2/LRs.txt

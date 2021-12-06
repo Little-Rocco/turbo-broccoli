@@ -24,7 +24,7 @@ import torch
 os.makedirs("images", exist_ok=True)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--n_epochs",   type=int,   default=1000,   help="number of epochs of training")
+parser.add_argument("--n_epochs",   type=int,   default=10,   help="number of epochs of training")
 parser.add_argument("--batch_size", type=int,   default=64,     help="size of the batches")
 parser.add_argument("--lr",         type=float, default=0.0002, help="learning rate")
 parser.add_argument("--n_cpu",      type=int,   default=8,      help="number of cpu threads to use during batch generation")

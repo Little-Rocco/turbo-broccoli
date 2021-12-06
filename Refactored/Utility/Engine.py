@@ -13,8 +13,6 @@ from datetime import datetime as dt, timedelta
 import datetime
 from datetime import datetime
 
-time_stamps = []
-
 class Engine:
 	opt = argparse.ArgumentParser()
 	dataroot = ""
@@ -71,6 +69,7 @@ class Engine:
 	fixed_noise = []
 	Tensor = None
 	def run(self):
+		time_stamps = []
 		self.Tensor = torch.cuda.FloatTensor if self.cuda else torch.FloatTensor
 		
 		for x in range(64):
@@ -78,10 +77,17 @@ class Engine:
 
 		if (self.modeChoice != ''):
 			self.load_checkpoint()
+		
+
+		# For checking time (0 epochs timestamp)
+		now = datetime.now()
+		current_time = now.strftime("%H:%M:%S")
+		time_stamps.append(current_time)
 
 		# -------- Training Loop ----------
 		print("Starting Loop...")
 		for epoch in range(self.epochs_done, self.opt.n_epochs+1):
+
 			for i, (imgs, _) in enumerate(self.dataloader):
 				# train discriminator
 				self.train_discriminator(imgs)
@@ -109,6 +115,11 @@ class Engine:
 			self.epochs_done += 1
 			self.current_iter = 0
 
+			# For checking time
+			now = datetime.now()
+			current_time = now.strftime("%H:%M:%S")
+			time_stamps.append(current_time)
+
 			# Model saving
 			if(epoch % self.opt.epochs_per_save == self.opt.epochs_per_save-1):
 				if(self.learningChoice != 'y'):
@@ -123,6 +134,13 @@ class Engine:
 		#Calculate and print average computation time for 1 epoch out of n_epochs
 		avg = time_elapsed.total_seconds() / self.opt.n_epochs
 		print("Average time elapsed for one epoch:", str(timedelta(seconds=avg)))
+
+		#Calculate and print average computation time for 1 epoch out of the last 5 of first 10 epochs
+		last_timestamp = dt.strptime(time_stamps[10], '%H:%M:%S')
+		first_timestamp = dt.strptime(time_stamps[5], '%H:%M:%S')
+		time_elapsed = last_timestamp - first_timestamp
+		avg = time_elapsed.total_seconds() / 5
+		print("Average time elapsed for one of last 5 of first 10 epochs:", str(timedelta(seconds=avg)))
 
 
 
@@ -305,7 +323,6 @@ class Engine:
 		current_time = now.strftime("%H:%M:%S")
 		print("Current Time =", current_time)
 
-		time_stamps.append(current_time)
 
 
 

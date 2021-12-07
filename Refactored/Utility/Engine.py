@@ -374,10 +374,9 @@ class Engine:
 					saver.saveImage(
 								img,
 								directory="images" + os.path.sep + "individual_real",
-								filename = str(i) + "real.png",
+								filename = str(i + n_batch*batch_size) + "real.png",
 								device="cpu",
 								channels = self.opt.channels)
-					latentSpace = torch.save({'latentSpace': Engine.z,}, 'LatentSpace\\' + str(i + n_batch*batch_size) + 'LS.pth')
 					i += 1
 
 				# save fake images
@@ -386,7 +385,7 @@ class Engine:
 					saver.saveImage(
 								img.detach(),
 								directory="images" + os.path.sep + "individual_fake",
-								filename = str(i) + "fake.png",
+								filename = str(i + n_batch*batch_size) + "fake.png",
 								device="cpu",
 								channels = self.opt.channels)
 					latentSpace = torch.save({'latentSpace': Engine.z,}, 'LatentSpace\\' + str(i + n_batch*batch_size) + 'LS.pth')

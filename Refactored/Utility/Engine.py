@@ -77,7 +77,10 @@ class Engine:
 
 		if (self.modeChoice != ''):
 			self.load_checkpoint()
-		
+
+		if(self.individualImagesChoice == 'y'):
+			self.save_graphs()
+
 
 		# For checking time (0 epochs timestamp)
 		now = datetime.now()
@@ -346,10 +349,11 @@ class Engine:
 
         # Grab a batch of real images from the dataloader
 		real_batch = next(iter(self.dataloader))
+		batch_size = len(real_batch)
 
 		savedImagesList = []
 		device = "cuda:0" if self.cuda else "cpu"
-		for x in range(64):
+		for x in range(batch_size):
 			savedImagesList.append(self.generator(self.fixed_noise[x].to(device))[0])
 
 
@@ -361,26 +365,37 @@ class Engine:
 								filename = str(self.epochs_done) + "e_" + str(self.iters_done) + "i.png",
 								device="cpu")
 		else:
-			# save real images
-			i = 0
-			for img in real_batch[0]:
-				saver.saveImage(
-							img,
-							directory="images" + os.path.sep + "individual_real",
-							filename = str(self.epochs_done) + "e_" + str(self.iters_done) + "i_" + str(i) + "real.png",
-							device="cpu",
-							channels = self.opt.channels)
-				latentSpace = torch.save({'latentSpace': Engine.z,}, 'LatentSpace\\' + str(i) + 'LS.pth')
-				i += 1
+			# make batches of real and fake images
+			n_batches = 10
+			for n_batch in range(n_batches):
+				# save real images
+				i = 0
+				for img in real_batch[0]:
+					saver.saveImage(
+								img,
+								directory="images" + os.path.sep + "individual_real",
+								filename = str(i) + "real.png",
+								device="cpu",
+								channels = self.opt.channels)
+					latentSpace = torch.save({'latentSpace': Engine.z,}, 'LatentSpace\\' + str(i + n_batch*batch_size) + 'LS.pth')
+					i += 1
 
-			# save fake images
-			i = 0
-			for img in savedImagesList:
-				saver.saveImage(
-							img.detach(),
-							directory="images" + os.path.sep + "individual_fake",
-							filename = str(self.epochs_done) + "e_" + str(self.iters_done) + "i_" + str(i) + "fake.png",
-							device="cpu",
-							channels = self.opt.channels)
-				latentSpace = torch.save({'latentSpace': Engine.z,}, 'LatentSpace\\' + str(i) + 'LS.pth')
-				i += 1
+				# save fake images
+				i = 0
+				for img in savedImagesList:
+					saver.saveImage(
+								img.detach(),
+								directory="images" + os.path.sep + "individual_fake",
+								filename = str(i) + "fake.png",
+								device="cpu",
+								channels = self.opt.channels)
+					latentSpace = torch.save({'latentSpace': Engine.z,}, 'LatentSpace\\' + str(i + n_batch*batch_size) + 'LS.pth')
+					i += 1
+
+				# Grab a batch of real images from the dataloader
+				real_batch = next(iter(self.dataloader))
+
+				savedImagesList = []
+				device = "cuda:0" if self.cuda else "cpu"
+				for x in range(batch_size):
+					savedImagesList.append(self.generator(self.fixed_noise[x].to(device))[0])

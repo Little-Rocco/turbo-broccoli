@@ -65,11 +65,14 @@ class saver:
         plt.close()
 
 
-    def saveImage(img, directory, filename, device):
+    def saveImage(img, directory, filename, device, channels):
         fname = directory + os.path.sep + filename
 
         plt.figure(figsize=(10, 10))
         img_0 = img[0].to(device)
-        plt.imshow(np.transpose(img_0, (0, 1)), cmap="gray")
+        if(channels == 1):
+            plt.imshow(np.transpose(img_0, (0, 1)), cmap="gray")
+        else:
+            plt.imshow(np.transpose(img_0, (0, 1)))
         plt.savefig(fname)
         plt.close()

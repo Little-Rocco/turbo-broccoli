@@ -368,7 +368,8 @@ class Engine:
 							img,
 							directory="images" + os.path.sep + "individual_real",
 							filename = str(self.epochs_done) + "e_" + str(self.iters_done) + "i_" + str(i) + "real.png",
-							device="cpu")
+							device="cpu",
+							channels = self.opt.channels)
 				i += 1
 
 			# save fake images
@@ -378,5 +379,6 @@ class Engine:
 							img.detach(),
 							directory="images" + os.path.sep + "individual_fake",
 							filename = str(self.epochs_done) + "e_" + str(self.iters_done) + "i_" + str(i) + "fake.png",
-							device="cpu")
+							device="cpu",
+							channels = self.opt.channels)
 				i += 1

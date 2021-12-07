@@ -69,10 +69,15 @@ class saver:
         fname = directory + os.path.sep + filename
 
         plt.figure(figsize=(10, 10))
-        img_0 = img[0].to(device)
+        img_0 = img.to(device)
         if(channels == 1):
-            plt.imshow(np.transpose(img_0, (0, 1)), cmap="gray")
+            plt.imshow(
+                np.transpose(torchvision.utils.make_grid(img_0[0], padding=0, normalize=True).cpu(),
+                        (0, 1)))
         else:
-            plt.imshow(np.transpose(img_0, (0, 1)))
+            plt.imshow(
+                np.transpose(torchvision.utils.make_grid(img_0, padding=0, normalize=True).cpu(),
+                        (1, 2, 0)))
         plt.savefig(fname)
         plt.close()
+

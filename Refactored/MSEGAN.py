@@ -43,7 +43,7 @@ parser.add_argument("--beta1", type=float, default=0.5, help="beta1 hyperparamet
 opt = parser.parse_args()
 print(opt)
 
-dataroot = "C:\\Users\\Frederik\\Documents\\GitHub\\turbo-broccoli\\datasets\\AnimeFaces"
+dataroot = "C:\\Users\\Frederik Trudslev\\Desktop\\Dataset\\data"
 seed = torch.Generator().seed()
 print("Current seed: " + str(seed))
 

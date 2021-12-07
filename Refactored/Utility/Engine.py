@@ -356,7 +356,7 @@ class Engine:
 		device = "cuda:0" if self.cuda else "cpu"
 		for x in range(batch_size):
 			savedLatentList.append(Variable(self.Tensor(np.random.normal(0, 1, (batch_size, self.opt.latent_dim, 1, 1)))))
-			savedImagesList.append(self.generator(self.savedLatentList[x].to(device))[0])
+			savedImagesList.append(self.generator(savedLatentList[x].to(device))[0])
 
 
 		if(self.individualImagesChoice != "y"):
@@ -401,4 +401,4 @@ class Engine:
 				device = "cuda:0" if self.cuda else "cpu"
 				for x in range(batch_size):
 					savedLatentList.append(Variable(self.Tensor(np.random.normal(0, 1, (batch_size, self.opt.latent_dim, 1, 1)))))
-					savedImagesList.append(self.generator(self.savedLatentList[x].to(device))[0])
+					savedImagesList.append(self.generator(savedLatentList[x].to(device))[0])

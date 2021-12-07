@@ -390,7 +390,7 @@ class Engine:
 								filename = str(i + n_batch*batch_size) + "fake.png",
 								device="cpu",
 								channels = self.opt.channels)
-					latentSpace = torch.save({'latentSpace': Engine.z,}, 'LatentSpace\\' + str(i + n_batch*batch_size) + 'LS.pth')
+					latentSpace = torch.save({'latentSpace':savedLatentList[i],}, 'LatentSpace\\' + str(i + n_batch*batch_size) + 'LS.pth')
 					i += 1
 
 				# Grab a batch of real images from the dataloader

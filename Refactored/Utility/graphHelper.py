@@ -68,7 +68,7 @@ class saver:
     def saveImage(img, directory, filename, device, channels):
         fname = directory + os.path.sep + filename
 
-        plt.figure(figsize=(10, 10))
+        plt.figure(figsize=(83, 83), dpi=1)
         img_0 = img.to(device)
         if(channels == 1):
             plt.imshow(

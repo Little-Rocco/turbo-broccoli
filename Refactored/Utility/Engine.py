@@ -352,9 +352,11 @@ class Engine:
 		batch_size = len(real_batch)
 
 		savedImagesList = []
+		savedLatentList = []
 		device = "cuda:0" if self.cuda else "cpu"
 		for x in range(batch_size):
-			savedImagesList.append(self.generator(self.fixed_noise[x].to(device))[0])
+			savedLatentList.append(Variable(self.Tensor(np.random.normal(0, 1, (batch_size, self.opt.latent_dim, 1, 1)))))
+			savedImagesList.append(self.generator(self.savedLatentList[x].to(device))[0])
 
 
 		if(self.individualImagesChoice != "y"):
@@ -393,8 +395,10 @@ class Engine:
 
 				# Grab a batch of real images from the dataloader
 				real_batch = next(iter(self.dataloader))
-
+				
 				savedImagesList = []
+				savedLatentList = []
 				device = "cuda:0" if self.cuda else "cpu"
 				for x in range(batch_size):
-					savedImagesList.append(self.generator(self.fixed_noise[x].to(device))[0])
+					savedLatentList.append(Variable(self.Tensor(np.random.normal(0, 1, (batch_size, self.opt.latent_dim, 1, 1)))))
+					savedImagesList.append(self.generator(self.savedLatentList[x].to(device))[0])

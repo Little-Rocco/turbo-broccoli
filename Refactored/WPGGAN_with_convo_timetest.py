@@ -4,6 +4,8 @@ import numpy as np
 import math
 import sys
 
+from datetime import datetime as dt, timedelta
+import datetime
 from datetime import datetime
 
 import torchvision.transforms as transforms
@@ -172,7 +174,7 @@ time_stamps.append(current_time)
 
 
 batches_done = 0
-for epoch in range(opt.n_epochs):
+for epoch in range(opt.n_epochs+1):
     for i, (imgs, _) in enumerate(dataloader):
 
         # Configure input

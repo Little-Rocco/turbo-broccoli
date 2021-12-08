@@ -349,7 +349,7 @@ class Engine:
 
         # Grab a batch of real images from the dataloader
 		real_batch = next(iter(self.dataloader))
-		batch_size = len(real_batch)
+		batch_size = len(real_batch[0])
 
 		savedImagesList = []
 		savedLatentList = []

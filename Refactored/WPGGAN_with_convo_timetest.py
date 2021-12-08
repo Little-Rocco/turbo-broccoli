@@ -253,7 +253,7 @@ time_elapsed = last_timestamp - first_timestamp
 print("Total amount of time elapsed:", time_elapsed)
 
 #Calculate and print average computation time for 1 epoch out of n_epochs
-avg = time_elapsed.total_seconds() / self.opt.n_epochs
+avg = time_elapsed.total_seconds() / opt.n_epochs
 print("Average time elapsed for one epoch:", str(timedelta(seconds=avg)))
 
 #Calculate and print average computation time for 1 epoch out of the last 5 of first 10 epochs

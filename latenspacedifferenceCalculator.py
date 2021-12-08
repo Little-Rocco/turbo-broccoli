@@ -9,21 +9,21 @@ from torch.autograd import variable
 
 path = 'Refactored' + os.path.sep + 'LatentSpace' + os.path.sep
 i = 0
-j = 0
-latentSpaces = []
-latentSpaceAverage = 0
+latentSpaceAverage = torch.empty((2, 100, 1, 1))
+latentSpaceAverage.detach()
 
 
-for i in range(1000):
-   if os.path.isfile(path + str(i) + 'LS.pth'):
-      latentSpaces.append(torch.load(path + str(i) + 'LS.pth'))
-      print(j)
-      print(latentSpaces[j])
-      j += 1
+x1 = os.walk(path)
+x2 = list(x1)
+x3 = x2[0]
+fileNames = x3[2]
+for fName in fileNames:
+   latentSpace = torch.load(path + os.path.sep + fName)['latentSpace']
+   latentSpace.detach()
+   latentSpaceAverage += latentSpace
+   i += 1
 
-for i in range(j):
-   latentSpaceAverage += latentSpaces[i]
 
-latentSpaceAverage = latentSpaceAverage/j
 
+latentSpaceAverage = latentSpaceAverage/i
 print(latentSpaceAverage)

@@ -328,7 +328,6 @@ class Engine:
 
 
 
-
 	def save_graphs(self):
         #save graph for loss
 		loss_graph = None
@@ -351,12 +350,9 @@ class Engine:
 		real_batch = next(iter(self.dataloader))
 		batch_size = len(real_batch[0])
 
-		savedImagesList = []
-		savedLatentList = []
 		device = "cuda:0" if self.cuda else "cpu"
-		for x in range(batch_size):
-			savedLatentList.append(Variable(self.Tensor(np.random.normal(0, 1, (batch_size, self.opt.latent_dim, 1, 1)))))
-			savedImagesList.append(self.generator(savedLatentList[x].to(device))[0])
+		savedLatentList = Variable(self.Tensor(np.random.normal(0, 1, (batch_size, self.opt.latent_dim, 1, 1))))
+		savedImagesList = self.generator(savedLatentList.to(device))
 
 
 		if(self.individualImagesChoice != "y"):
@@ -369,6 +365,7 @@ class Engine:
 		else:
 			# make batches of real and fake images
 			n_batches = 10
+			offset = batch_size * n_batches * self.iters_done
 			for n_batch in range(n_batches):
 				# save real images
 				i = 0
@@ -376,7 +373,7 @@ class Engine:
 					saver.saveImage(
 								img,
 								directory="images" + os.path.sep + "individual_real",
-								filename = str(i + n_batch*batch_size) + "real.png",
+								filename = str(i + n_batch*batch_size + offset) + "real.png",
 								device="cpu",
 								channels = self.opt.channels)
 					i += 1
@@ -387,18 +384,15 @@ class Engine:
 					saver.saveImage(
 								img.detach(),
 								directory="images" + os.path.sep + "individual_fake",
-								filename = str(i + n_batch*batch_size) + "fake.png",
+								filename = str(i + n_batch*batch_size + offset) + "fake.png",
 								device="cpu",
 								channels = self.opt.channels)
-					latentSpace = torch.save({'latentSpace':savedLatentList[i],}, 'LatentSpace\\' + str(i + n_batch*batch_size) + 'LS.pth')
+					latentSpace = torch.save({'latentSpace':savedLatentList[i],}, 'LatentSpace\\' + str(i + n_batch*batch_size + offset) + 'LS.pth')
 					i += 1
 
 				# Grab a batch of real images from the dataloader
 				real_batch = next(iter(self.dataloader))
 				
-				savedImagesList = []
-				savedLatentList = []
 				device = "cuda:0" if self.cuda else "cpu"
-				for x in range(batch_size):
-					savedLatentList.append(Variable(self.Tensor(np.random.normal(0, 1, (batch_size, self.opt.latent_dim, 1, 1)))))
-					savedImagesList.append(self.generator(savedLatentList[x].to(device))[0])
+				savedLatentList = Variable(self.Tensor(np.random.normal(0, 1, (batch_size, self.opt.latent_dim, 1, 1))))
+				savedImagesList = self.generator(savedLatentList.to(device))

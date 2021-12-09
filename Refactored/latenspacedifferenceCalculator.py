@@ -55,7 +55,7 @@ class Generator(torch.nn.Module):
       return logits
       
 def load_checkpoint(generator):
-	model = torch.load('Models' + os.path.sep + 'Model' + opt.modelNumber + '.pth')
+	model = torch.load('Models' + os.path.sep + 'Model' + str(opt.modelNumber) + '.pth')
 
 	generator.load_state_dict(model['Generator'])
 
@@ -70,10 +70,9 @@ def load_checkpoint(generator):
 
 	generator.to(device)
 
+latentVectorList = []
 def LSaverage():
    latentSpaceAverage = torch.zeros((1, opt.latent_dim, 1, 1))
-
-   latentVectorList = []
    for fName in list(os.walk(path))[0][2]:
       latentVector = torch.load(path +  os.path.sep + fName)['latentSpace']
       latentVector = [latentVector]
@@ -104,8 +103,14 @@ def saveImage(img):
    plt.show()
 
 
-z = LSaverage()
 generator = Generator()
-fakeImage = generator(z)
-saveImage(fakeImage)
 
+load_checkpoint(generator)
+z = LSaverage()
+
+fakeImage = generator(latentVectorList[0])
+fakeAvgImage = generator(z)
+saveImage(fakeImage)
+saveImage(fakeAvgImage)
+
+#fakeImageWithFeature = generator(latentVectorList[0] - fakeAvgImage + someFeature)

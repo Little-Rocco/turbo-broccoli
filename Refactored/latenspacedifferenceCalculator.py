@@ -18,30 +18,42 @@ parser.add_argument("--ngf",        type=int,   default=64,     help="Size of fe
 parser.add_argument("--ndf",        type=int,   default=64,     help="Size of feature maps in discriminator")
 parser.add_argument("--img_size",   type=int,   default=64,     help="size of each image dimension")
 parser.add_argument("--channels",   type=int,   default=3,      help="number of image channels")
-parser.add_argument("--modelNumber",   type=int,   default=0,      help="choice of model")
+parser.add_argument("--modelNumber",   type=int,   default=100,      help="choice of model")
 
 opt = parser.parse_args()
 
 
 #Remember to double check that the generator is the same as used to train the model
 class Generator(torch.nn.Module):
-    def __init__(self):
-        super(Generator, self).__init__()
-        self.flatten = torch.nn.Flatten()
-        self.linear_relu_stack = torch.nn.Sequential(
-            # the neural network
-            torch.nn.Linear(opt.latent_dim, 256),
-            torch.nn.ReLU(),
-            torch.nn.Linear(256, opt.img_size * opt.img_size * opt.channels),
-            torch.nn.Tanh(),
+   def __init__(self):
+      super(Generator, self).__init__()
+      self.flatten = torch.nn.Flatten()
+      self.linear_relu_stack = torch.nn.Sequential(
+         # input is Z, going into a convolution
+         torch.nn.ConvTranspose2d(opt.latent_dim, opt.ngf * 8, 4, 1, 0, bias=False),
+         torch.nn.BatchNorm2d(opt.ngf * 8),
+         torch.nn.ReLU(True),
+         # state size. (ngf*8) x 4 x 4
+         torch.nn.ConvTranspose2d(opt.ngf * 8, opt.ngf * 4, 4, 2, 1, bias=False),
+         torch.nn.BatchNorm2d(opt.ngf * 4),
+         torch.nn.ReLU(True),
+         # state size. (ngf*4) x 8 x 8
+         torch.nn.ConvTranspose2d(opt.ngf * 4, opt.ngf * 2, 4, 2, 1, bias=False),
+         torch.nn.BatchNorm2d(opt.ngf * 2),
+         torch.nn.ReLU(True),
+         # state size. (ngf*2) x 16 x 16
+         torch.nn.ConvTranspose2d(opt.ngf * 2, opt.ngf, 4, 2, 1, bias=False),
+         torch.nn.BatchNorm2d(opt.ngf),
+         torch.nn.ReLU(True),
+         # state size. (ngf) x 32 x 32
+         torch.nn.ConvTranspose2d(opt.ngf, opt.channels, 4, 2, 1, bias=False),
+         torch.nn.Tanh()
+         # state size. (nc) x 64 x 64
         )
-
-    def forward(self, x):
-        x = self.flatten(x)
-        logits = self.linear_relu_stack(x).reshape((x.shape[0], opt.channels, opt.img_size, opt.img_size))
-        return logits
-
-
+   def forward(self, x):
+      logits = self.linear_relu_stack(x).reshape((x.shape[0], opt.channels, opt.img_size, opt.img_size))
+      return logits
+      
 def load_checkpoint(generator):
 	model = torch.load('Models' + os.path.sep + 'Model' + opt.modelNumber + '.pth')
 
@@ -59,15 +71,17 @@ def load_checkpoint(generator):
 	generator.to(device)
 
 def LSaverage():
-   latentSpaceAverage = torch.zeros((64, opt.latent_dim, 1, 1))
-   i = 0
+   latentSpaceAverage = torch.zeros((1, opt.latent_dim, 1, 1))
 
+   latentVectorList = []
    for fName in list(os.walk(path))[0][2]:
-      latentSpace = torch.load(path +  os.path.sep + fName)['latentSpace']
-      latentSpaceAverage += latentSpace
-      i += 1
+      latentVector = torch.load(path +  os.path.sep + fName)['latentSpace']
+      latentVector = [latentVector]
+      latentVector = torch.stack(latentVector)
+      latentVectorList.append(latentVector)
 
-   return latentSpaceAverage/i
+   latentVectorTensor = torch.stack(latentVectorList)
+   return torch.mean(latentVectorTensor, 0)
 
 def saveImage(img):
    channels = opt.channels

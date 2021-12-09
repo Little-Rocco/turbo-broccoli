@@ -118,8 +118,10 @@ def meanLoss(output, labels):
     return torch.mean(output)*int((0.5-labels[-1])*2)
 
 # Optimizers
-optimizer_G = torch.optim.RMSprop(engine.generator.parameters(), lr=opt.lr)
-optimizer_D = torch.optim.RMSprop(engine.discriminator.parameters(), lr=opt.lr)
+optimizer_D = torch.optim.Adam(engine.discriminator.parameters(), lr=engine.opt.lr,
+                                           betas=(engine.opt.beta1, 0.999))
+optimizer_G = torch.optim.Adam(engine.generator.parameters(), lr=engine.opt.lr,
+                                       betas=(engine.opt.beta1, 0.999))
 
 # Add functions and run
 engine.add_functions(optimizer_G, optimizer_D, meanLoss)

@@ -1,3 +1,10 @@
+# Documentation
+# Plotting modified from: https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html 
+# Memory leak fix after imports from: https://github.com/matplotlib/matplotlib/issues/20490 
+# 
+# 
+# end of documentation
+
 import os
 import torchvision
 import numpy as np

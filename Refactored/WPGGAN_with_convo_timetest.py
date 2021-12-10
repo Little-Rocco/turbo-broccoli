@@ -1,3 +1,11 @@
+# Documentation
+# Argparse code modified from: https://github.com/eriklindernoren/PyTorch-GAN/blob/master/implementations/wgan/wgan.py
+# Dataset and data loading modified from: https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html
+# Rest of code modified from: https://github.com/eriklindernoren/PyTorch-GAN/blob/master/implementations/wgan/wgan.py
+# 
+# 
+# End of documentation
+
 import argparse
 import os
 import numpy as np

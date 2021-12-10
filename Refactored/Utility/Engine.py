@@ -1,3 +1,11 @@
+# Documentation
+# Training loop and functions called therein modified from: https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html
+#														and https://github.com/eriklindernoren/PyTorch-GAN/blob/master/implementations/wgan/wgan.py
+# Argparse code inspired by: https://github.com/eriklindernoren/PyTorch-GAN/blob/master/implementations/wgan/wgan.py 
+# 
+# 
+# End of documentation
+
 from .graphHelper import *
 from .dataHelper import *
 

@@ -1,5 +1,8 @@
 # Documentation
 # install for IPython: https://ipython.org/install.html 
+# Argparse code modified from: https://github.com/eriklindernoren/PyTorch-GAN/blob/master/implementations/wgan/wgan.py
+# Networks modified from: https://pytorch.org/tutorials/beginner/basics/buildmodel_tutorial.html
+#                     and https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html
 #
 #
 # end of documentation

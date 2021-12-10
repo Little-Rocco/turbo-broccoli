@@ -1,7 +1,10 @@
 # Documentation
 # install for IPython: https://ipython.org/install.html
-#
-#
+# Argparse code modified from: https://github.com/eriklindernoren/PyTorch-GAN/blob/master/implementations/wgan/wgan.py
+# Activation functions changed according to: https://machinelearningmastery.com/how-to-choose-loss-functions-when-training-deep-learning-neural-networks/
+# Networks modified from: https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html
+# 
+# 
 # end of documentation
 
 

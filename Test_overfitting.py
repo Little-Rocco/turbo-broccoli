@@ -1,9 +1,14 @@
-# NOTE: Before you can run it you need to make sure you have the below packages
+# Documentation
+# Before you can run it you need to make sure you have the below packages
 #           - opencv (imported as cv2)
 #               - using pip: https://www.tutorialspoint.com/how-to-install-opencv-in-python
 #               - using conda: conda install -c conda-forge opencv
 #           - scikit-image (imported as skimage)
 #               - https://scikit-image.org/docs/dev/install.html
+# Code inspired by: https://scikit-image.org/docs/dev/auto_examples/transform/plot_ssim.html 
+# 
+# End of documentation
+
 
 import matplotlib.pyplot as plt
 import numpy as np

@@ -1,3 +1,9 @@
+# Documentation
+# Dataset loading modified from: https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html
+# 
+# 
+# end of documentation
+
 import torch
 import torchvision
 

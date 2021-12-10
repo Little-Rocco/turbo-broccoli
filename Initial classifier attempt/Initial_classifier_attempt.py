@@ -1,3 +1,9 @@
+# Documentation
+# Code modified from: https://pytorch.org/tutorials/beginner/basics/intro.html 
+# 
+# 
+# End of documentation
+
 import os 
 import torch
 import torchvision

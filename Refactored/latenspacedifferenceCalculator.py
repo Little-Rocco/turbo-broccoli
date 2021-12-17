@@ -8,6 +8,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import torchvision
+from statistics import mean
 
 path = 'LatentSpace'
 
@@ -122,19 +123,17 @@ zInput = LSaverage(path + os.path.sep + "Input" + os.path.sep)
 
 ############# Colour choosing #############
 startRGB = [1.0, 1.0, 1.0]
-targetRGB = [0.7, 0.0, 0.9]
+targetRGB = [0.3, 0.0, 0.9]
 
 
 ############# latent vector calculation #############
-Kdiff = max(0, min(startRGB[0]-targetRGB[0], startRGB[1]-targetRGB[1], startRGB[2]-targetRGB[2]))
-Wdiff = max(0, min(targetRGB[0]-startRGB[0], targetRGB[1]-startRGB[1], targetRGB[2]-startRGB[2]))
-KWdiff = [(Kdiff-Wdiff), (Wdiff-Kdiff)]
+Kdiff = mean([startRGB[0]-targetRGB[0], startRGB[1]-targetRGB[1], startRGB[2]-targetRGB[2]])
+KWdiff = [Kdiff, -Kdiff]
 
-RGBdiff = [targetRGB[0]-startRGB[0], targetRGB[1]-startRGB[1], targetRGB[2]-startRGB[2]]
-KWoffset = KWdiff[1]
-RGBdiff = [RGBdiff[0]-KWoffset, RGBdiff[1]-KWoffset, RGBdiff[2]-KWoffset]
+newStartRGB = [startRGB[0]-Kdiff, startRGB[1]-Kdiff, startRGB[2]-Kdiff]
+RGBdiff = [targetRGB[0]-newStartRGB[0], targetRGB[1]-newStartRGB[1], targetRGB[2]-newStartRGB[2]]
 
-factor = 1.5
+factor = 1.8
 KWdiff = [KWdiff[0]*factor, KWdiff[1]*factor]
 RGBdiff = [RGBdiff[0]*factor, RGBdiff[1]*factor, RGBdiff[2]*factor]
 

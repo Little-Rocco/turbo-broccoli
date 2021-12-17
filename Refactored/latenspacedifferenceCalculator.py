@@ -114,17 +114,36 @@ zRed = LSaverage(colourPath + os.path.sep + "Red" + os.path.sep)
 zGreen = LSaverage(colourPath + os.path.sep + "Green" + os.path.sep)
 zBlue = LSaverage(colourPath + os.path.sep + "Blue" + os.path.sep)
 
+zBlack = LSaverage(colourPath + os.path.sep + "Black" + os.path.sep)
+zWhite = LSaverage(colourPath + os.path.sep + "White" + os.path.sep)
+
 zAvg = LSaverage(path + os.path.sep + "All" + os.path.sep)
 zInput = LSaverage(path + os.path.sep + "Input" + os.path.sep)
 
-fakeAvgImage = generator(zBlue)
-startRGB = [1.0, 0.0, 0.0]
-targetRGB = [0.0, 1.0, 0.0]
+############# Colour choosing #############
+startRGB = [1.0, 1.0, 1.0]
+targetRGB = [0.0, 0.0, 0.0]
+
+
+############# latent vector calculation #############
+Kdiff = max(0, startRGB[0]-targetRGB[0], startRGB[1]-targetRGB[1], startRGB[2]-targetRGB[2])
+Wdiff = max(0, targetRGB[0]-startRGB[0], targetRGB[1]-startRGB[1], targetRGB[2]-startRGB[2])
+KWdiff = [(Kdiff-Wdiff), (Wdiff-Kdiff)]
+
 RGBdiff = [targetRGB[0]-startRGB[0], targetRGB[1]-startRGB[1], targetRGB[2]-startRGB[2]]
+KWoffset = KWdiff[1]
+RGBdiff = [RGBdiff[0]-KWoffset, RGBdiff[1]-KWoffset, RGBdiff[2]-KWoffset]
 
 factor = 1.5
+KWdiff = [KWdiff[0]*factor, KWdiff[1]*factor]
 RGBdiff = [RGBdiff[0]*factor, RGBdiff[1]*factor, RGBdiff[2]*factor]
-fakeImageWithFeature = generator(zInput + RGBdiff[0]*zRed + RGBdiff[1]*zGreen + RGBdiff[2]*zBlue - (RGBdiff[0]+RGBdiff[1]+RGBdiff[2])*zAvg)
 
+############# Image generation and showing #############
+#fakeAvgImage = generator(zBlue)
 #saveImage(fakeAvgImage)
+fakeImageWithFeature = generator(zInput
+                                 + RGBdiff[0]*zRed + RGBdiff[1]*zGreen + RGBdiff[2]*zBlue
+                                 + KWdiff[0]*zBlack + KWdiff[1]*zWhite
+                                 - (RGBdiff[0]+RGBdiff[1]+RGBdiff[2] + KWdiff[0]+KWdiff[1])*zAvg)
+
 saveImage(fakeImageWithFeature)

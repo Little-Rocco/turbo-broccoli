@@ -12,9 +12,9 @@ from statistics import mean
 from math import sqrt, pi
 
 path = 'LatentSpace'
-startRGB = [1.0, 0.9, 1.0]
-targetRGB = [1.0, 0.4, 0.0]
-factor = 1.0
+startRGB = [0.5, 0.3, 0.1]
+targetRGB = [1.0, 0.0, 0.0]
+factor = 0.5
 
 
 #Remember to double check that the params are same for both the model e.g. dcgan and this!!!!
@@ -117,23 +117,23 @@ load_checkpoint(generator)
 colourPath = path + os.path.sep + "colors"
 
 zBlack = LSaverage(colourPath + os.path.sep + "Black" + os.path.sep)
-zKrgb = [0.15, 0.15, 0.15]
+zKrgb = [55/255, 45/255, 50/255]
 zWhite = LSaverage(colourPath + os.path.sep + "White" + os.path.sep)
-zWrgb = [0.8, 0.8, 0.8]
+zWrgb = [235/255, 230/255, 215/255]
 
 zOrange = LSaverage(colourPath + os.path.sep + "Orange" + os.path.sep)
-zOrgb = [0.6, 0.4, 0.2]
+zOrgb = [160/255, 75/255, 40/255]
 zPurple = LSaverage(colourPath + os.path.sep + "Purple" + os.path.sep)
-zMrgb = [0.4, 0.25, 0.7]
+zMrgb = [130/255, 95/255, 150/255]
 zYellow = LSaverage(colourPath + os.path.sep + "Yellow" + os.path.sep)
-zYrgb = [0.8, 0.8, 0.5]
+zYrgb = [230/255, 205/255, 135/255]
 
 zRed = LSaverage(colourPath + os.path.sep + "Red" + os.path.sep)
-zRrgb = [0.7, 0.4, 0.4]
+zRrgb = [215/255, 60/255, 70/255]
 zGreen = LSaverage(colourPath + os.path.sep + "Green" + os.path.sep)
-zGrgb = [0.25, 0.75, 0.6]
+zGrgb = [80/255, 140/255, 90/255]
 zBlue = LSaverage(colourPath + os.path.sep + "Blue" + os.path.sep)
-zBrgb = [0.15, 0.25, 0.6]
+zBrgb = [100/255, 120/255, 160/255]
 
 zAvg = LSaverage(path + os.path.sep + "All" + os.path.sep)
 zInput = LSaverage(path + os.path.sep + "Input" + os.path.sep)
@@ -226,8 +226,9 @@ zFinal = getLatent(startRGB, targetRGB, RGBvecList, zInput, latentVecList, zAvg)
 
 
 ############# Image generation and showing #############
-#fakeAvgImage = generator(zBlue)
-#saveImage(fakeAvgImage)
+#for z in latentVecList:
+#    fakeAvgImage = generator(z)
+#    saveImage(fakeAvgImage)
 
 fakeImageWithFeature = generator(zFinal)
 saveImage(fakeImageWithFeature)

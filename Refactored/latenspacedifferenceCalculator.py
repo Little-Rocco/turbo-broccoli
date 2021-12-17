@@ -122,12 +122,12 @@ zInput = LSaverage(path + os.path.sep + "Input" + os.path.sep)
 
 ############# Colour choosing #############
 startRGB = [1.0, 1.0, 1.0]
-targetRGB = [0.0, 0.0, 0.0]
+targetRGB = [0.7, 0.0, 0.9]
 
 
 ############# latent vector calculation #############
-Kdiff = max(0, startRGB[0]-targetRGB[0], startRGB[1]-targetRGB[1], startRGB[2]-targetRGB[2])
-Wdiff = max(0, targetRGB[0]-startRGB[0], targetRGB[1]-startRGB[1], targetRGB[2]-startRGB[2])
+Kdiff = max(0, min(startRGB[0]-targetRGB[0], startRGB[1]-targetRGB[1], startRGB[2]-targetRGB[2]))
+Wdiff = max(0, min(targetRGB[0]-startRGB[0], targetRGB[1]-startRGB[1], targetRGB[2]-startRGB[2]))
 KWdiff = [(Kdiff-Wdiff), (Wdiff-Kdiff)]
 
 RGBdiff = [targetRGB[0]-startRGB[0], targetRGB[1]-startRGB[1], targetRGB[2]-startRGB[2]]

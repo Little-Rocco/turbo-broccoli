@@ -13,8 +13,8 @@ from math import sqrt, pi
 
 path = 'LatentSpace'
 startRGB = [0.5, 0.3, 0.1]
-targetRGB = [1.0, 0.0, 0.0]
-factor = 0.5
+targetRGB = [1.0, 0.9, 0.7]
+factor = 3
 
 
 #Remember to double check that the params are same for both the model e.g. dcgan and this!!!!
@@ -207,7 +207,7 @@ def findWeights(desiredVec, vecList):
     return weights
 
 
-def getLatent(initialRGB, targetRGB, RGBvecList, initialLatent, latentVecList, latentAvg):
+def getLatent(initialRGB, targetRGB, RGBvecList, initialLatent, latentVecList, latentAvg, factor):
     desiredVector = [targetRGB[0]-initialRGB[0], targetRGB[1]-initialRGB[1], targetRGB[2]-initialRGB[2]]
     weights = findWeights(desiredVector, RGBvecList)
 
@@ -222,13 +222,12 @@ def getLatent(initialRGB, targetRGB, RGBvecList, initialLatent, latentVecList, l
 
 RGBvecList = [zKrgb, zWrgb, zOrgb, zMrgb, zYrgb, zRrgb, zGrgb, zBrgb]
 latentVecList = [zBlack, zWhite, zOrange, zPurple, zYellow, zRed, zGreen, zBlue]
-zFinal = getLatent(startRGB, targetRGB, RGBvecList, zInput, latentVecList, zAvg)
+zFinal = getLatent(startRGB, targetRGB, RGBvecList, zInput, latentVecList, zAvg, factor)
 
 
 ############# Image generation and showing #############
 #for z in latentVecList:
 #    fakeAvgImage = generator(z)
 #    saveImage(fakeAvgImage)
-
 fakeImageWithFeature = generator(zFinal)
 saveImage(fakeImageWithFeature)

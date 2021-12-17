@@ -13,14 +13,23 @@ from math import sqrt, pi
 from copy import deepcopy
 
 path = 'LatentSpace'
-startRGB = [160/255, 75/255, 40/255]
-targetRGB = [215/255, 60/255, 70/255]
+startRGB = [130/255, 95/255, 150/255]
+targetRGB = [235/255, 230/255, 230/255]
 
 # multipliers
 # 1 is for startRGB -> [0, 0, 0]
 # 2 for [0, 0, 0] -> targetRGB
 factorReduce   = 1
-factorIncrease = 1
+factorIncrease = 15
+"""
+Tips/steps for how to get desired colour:
+1: set startRGB according to input image
+2: set targetRGB to what colour you want
+3: set factorReduce to 1 and factorIncrease to 0
+4: adjust factorReduce until hair is black
+5: adjust factorIncrease (and maybe targetRGB) until hair is desired colour
+"""
+
 
 """ Colour palette
 R rgb = [215/255, 60/255, 70/255]

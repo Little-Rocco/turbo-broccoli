@@ -10,11 +10,29 @@ import numpy as np
 import torchvision
 from statistics import mean
 from math import sqrt, pi
+from copy import deepcopy
 
 path = 'LatentSpace'
-startRGB = [0.5, 0.3, 0.1]
-targetRGB = [1.0, 0.9, 0.7]
-factor = 3
+startRGB = [160/255, 75/255, 40/255]
+targetRGB = [215/255, 60/255, 70/255]
+
+# multipliers
+# 1 is for startRGB -> [0, 0, 0]
+# 2 for [0, 0, 0] -> targetRGB
+factorReduce   = 1
+factorIncrease = 1
+
+""" Colour palette
+R rgb = [215/255, 60/255, 70/255]
+G rgb = [80/255, 140/255, 90/255]
+B rgb = [100/255, 120/255, 160/255]
+W rgb = [235/255, 230/255, 215/255]
+
+O rgb = [160/255, 75/255, 40/255]
+M rgb = [130/255, 95/255, 150/255]
+Y rgb = [230/255, 205/255, 135/255]
+K rgb = [55/255, 45/255, 50/255]
+"""
 
 
 #Remember to double check that the params are same for both the model e.g. dcgan and this!!!!
@@ -209,7 +227,7 @@ def findWeights(desiredVec, vecList):
 
 def getLatent(initialRGB, targetRGB, RGBvecList, initialLatent, latentVecList, latentAvg, factor):
     desiredVector = [targetRGB[0]-initialRGB[0], targetRGB[1]-initialRGB[1], targetRGB[2]-initialRGB[2]]
-    weights = findWeights(desiredVector, RGBvecList)
+    weights = findWeights(desiredVector, deepcopy(RGBvecList))
 
     newLatent = initialLatent
     totalWeight = 0
@@ -222,7 +240,8 @@ def getLatent(initialRGB, targetRGB, RGBvecList, initialLatent, latentVecList, l
 
 RGBvecList = [zKrgb, zWrgb, zOrgb, zMrgb, zYrgb, zRrgb, zGrgb, zBrgb]
 latentVecList = [zBlack, zWhite, zOrange, zPurple, zYellow, zRed, zGreen, zBlue]
-zFinal = getLatent(startRGB, targetRGB, RGBvecList, zInput, latentVecList, zAvg, factor)
+zColourless = getLatent(startRGB, [0,0,0],  RGBvecList, zInput,       latentVecList, zAvg, factorReduce)
+zFinal =      getLatent([0,0,0], targetRGB, RGBvecList, zColourless, latentVecList, zAvg, factorIncrease)
 
 
 ############# Image generation and showing #############

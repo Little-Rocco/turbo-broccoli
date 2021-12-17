@@ -26,7 +26,6 @@
     <Compile Include="MAEGAN.py" />
     <Compile Include="MSEGAN.py" />
     <Compile Include="wgan.py" />
-    <Compile Include="WPGGAN_with_convo_timetest.py" />
     <Compile Include="_2nd_GAN_attempt.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />

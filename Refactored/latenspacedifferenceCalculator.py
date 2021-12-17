@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torchvision
 
-path = 'Refactored' + os.path.sep + 'LatentSpace' + os.path.sep
+path = 'LatentSpace'
 
 #Remember to double check that the params are same for both the model e.g. dcgan and this!!!!
 parser = argparse.ArgumentParser()
@@ -70,14 +70,16 @@ def load_checkpoint(generator):
 
 	generator.to(device)
 
-latentVectorList = []
-def LSaverage():
+def LSaverage(path):
+   latentVectorList = []
    latentSpaceAverage = torch.zeros((1, opt.latent_dim, 1, 1))
-   for fName in list(os.walk(path))[0][2]:
-      latentVector = torch.load(path +  os.path.sep + fName)['latentSpace']
-      latentVector = [latentVector]
-      latentVector = torch.stack(latentVector)
-      latentVectorList.append(latentVector)
+   latentFileList = list(os.walk(path))
+   for fName in latentFileList[0][2]:
+      if(fName[-1] == 'h'):
+         latentVector = torch.load(path +  os.path.sep + fName)['latentSpace']
+         latentVector = [latentVector]
+         latentVector = torch.stack(latentVector)
+         latentVectorList.append(latentVector)
 
    latentVectorTensor = torch.stack(latentVectorList)
    return torch.mean(latentVectorTensor, 0)
@@ -106,11 +108,23 @@ def saveImage(img):
 generator = Generator()
 
 load_checkpoint(generator)
-z = LSaverage()
+colourPath = path + os.path.sep + "colors"
 
-fakeImage = generator(latentVectorList[0])
-fakeAvgImage = generator(z)
-saveImage(fakeImage)
-saveImage(fakeAvgImage)
+zRed = LSaverage(colourPath + os.path.sep + "Red" + os.path.sep)
+zGreen = LSaverage(colourPath + os.path.sep + "Green" + os.path.sep)
+zBlue = LSaverage(colourPath + os.path.sep + "Blue" + os.path.sep)
 
-#fakeImageWithFeature = generator(latentVectorList[0] - fakeAvgImage + someFeature)
+zAvg = LSaverage(path + os.path.sep + "All" + os.path.sep)
+zInput = LSaverage(path + os.path.sep + "Input" + os.path.sep)
+
+fakeAvgImage = generator(zBlue)
+startRGB = [1.0, 0.0, 0.0]
+targetRGB = [0.0, 1.0, 0.0]
+RGBdiff = [targetRGB[0]-startRGB[0], targetRGB[1]-startRGB[1], targetRGB[2]-startRGB[2]]
+
+factor = 1.5
+RGBdiff = [RGBdiff[0]*factor, RGBdiff[1]*factor, RGBdiff[2]*factor]
+fakeImageWithFeature = generator(zInput + RGBdiff[0]*zRed + RGBdiff[1]*zGreen + RGBdiff[2]*zBlue - (RGBdiff[0]+RGBdiff[1]+RGBdiff[2])*zAvg)
+
+#saveImage(fakeAvgImage)
+saveImage(fakeImageWithFeature)

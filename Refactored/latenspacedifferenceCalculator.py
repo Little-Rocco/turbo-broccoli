@@ -9,8 +9,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torchvision
 from statistics import mean
+from math import sqrt, pi
 
 path = 'LatentSpace'
+startRGB = [1.0, 0.9, 1.0]
+targetRGB = [1.0, 0.4, 0.0]
+factor = 1.0
+
 
 #Remember to double check that the params are same for both the model e.g. dcgan and this!!!!
 parser = argparse.ArgumentParser()
@@ -111,38 +116,118 @@ generator = Generator()
 load_checkpoint(generator)
 colourPath = path + os.path.sep + "colors"
 
-zRed = LSaverage(colourPath + os.path.sep + "Red" + os.path.sep)
-zGreen = LSaverage(colourPath + os.path.sep + "Green" + os.path.sep)
-zBlue = LSaverage(colourPath + os.path.sep + "Blue" + os.path.sep)
-
 zBlack = LSaverage(colourPath + os.path.sep + "Black" + os.path.sep)
+zKrgb = [0.15, 0.15, 0.15]
 zWhite = LSaverage(colourPath + os.path.sep + "White" + os.path.sep)
+zWrgb = [0.8, 0.8, 0.8]
+
+zOrange = LSaverage(colourPath + os.path.sep + "Orange" + os.path.sep)
+zOrgb = [0.6, 0.4, 0.2]
+zPurple = LSaverage(colourPath + os.path.sep + "Purple" + os.path.sep)
+zMrgb = [0.4, 0.25, 0.7]
+zYellow = LSaverage(colourPath + os.path.sep + "Yellow" + os.path.sep)
+zYrgb = [0.8, 0.8, 0.5]
+
+zRed = LSaverage(colourPath + os.path.sep + "Red" + os.path.sep)
+zRrgb = [0.7, 0.4, 0.4]
+zGreen = LSaverage(colourPath + os.path.sep + "Green" + os.path.sep)
+zGrgb = [0.25, 0.75, 0.6]
+zBlue = LSaverage(colourPath + os.path.sep + "Blue" + os.path.sep)
+zBrgb = [0.15, 0.25, 0.6]
 
 zAvg = LSaverage(path + os.path.sep + "All" + os.path.sep)
 zInput = LSaverage(path + os.path.sep + "Input" + os.path.sep)
 
-############# Colour choosing #############
-startRGB = [1.0, 1.0, 1.0]
-targetRGB = [0.3, 0.0, 0.9]
-
 
 ############# latent vector calculation #############
-Kdiff = mean([startRGB[0]-targetRGB[0], startRGB[1]-targetRGB[1], startRGB[2]-targetRGB[2]])
-KWdiff = [Kdiff, -Kdiff]
+def vecLength(vec):
+    return sqrt((vec[0]**2) + (vec[1]**2) + (vec[2]**2))
 
-newStartRGB = [startRGB[0]-Kdiff, startRGB[1]-Kdiff, startRGB[2]-Kdiff]
-RGBdiff = [targetRGB[0]-newStartRGB[0], targetRGB[1]-newStartRGB[1], targetRGB[2]-newStartRGB[2]]
+def vecAngle(vec1, vec2):
+    # Returns the angle between the vectors, in radians in range [0, pi]
+    lenThing = vecLength(vec1) * vecLength(vec2)
+    if lenThing != 0:
+        return np.arccos((vec1[0]*vec2[0] + vec1[1]*vec2[1] + vec1[2]*vec2[2]) / (vecLength(vec1) * vecLength(vec2)))
+    else:
+        return 0
 
-factor = 1.8
-KWdiff = [KWdiff[0]*factor, KWdiff[1]*factor]
-RGBdiff = [RGBdiff[0]*factor, RGBdiff[1]*factor, RGBdiff[2]*factor]
+def findClosestVec(desiredVec, vecList):
+    angles = []
+    for vec in vecList:
+        angles.append(vecAngle(desiredVec, vec))
+    
+    lowestAngle = 4
+    angleIdx = 0
+    i = 0
+    for a in angles:
+        if a < lowestAngle or pi-a < lowestAngle:
+            lowestAngle = min([a, pi-a])
+            angleIdx = i
+        i += 1
+    return angleIdx
+
+
+def findWeights(desiredVec, vecList):
+    weights = []
+    for vec in vecList:
+        weights.append(0)
+
+    # use each vector once
+    remainingVecList = vecList
+    currentVec = [0, 0, 0]
+    remainingVec = desiredVec
+    for i in range(len(vecList)):
+        # find closest remaining vector
+        idx = findClosestVec(remainingVec, remainingVecList)
+        vec = remainingVecList[idx]
+
+        # find whether to use positive or negative amount
+        sign = 1
+        angle = vecAngle(currentVec, vec)
+        if angle > pi/2:
+            sign = -1
+        vec = [vec[0]*sign, vec[1]*sign, vec[2]*sign]
+
+        # find ideal amplitude
+        vecLen = vecLength(vec)
+        normVec = [vec[0]/vecLen, vec[1]/vecLen, vec[2]/vecLen]
+        amplitude = np.dot(remainingVec, normVec)
+
+        # add new vector
+        mult = sign*amplitude
+        currentVec = [currentVec[0]+(vec[0]*mult), currentVec[1]+(vec[1]*mult), currentVec[2]+(vec[2]*mult)]
+        remainingVec = [desiredVec[0]-currentVec[0], desiredVec[1]-currentVec[1], desiredVec[2]-currentVec[2]]
+
+        # save weight
+        weights[idx] = mult
+
+        # remove element to only use it once
+        remainingVecList.pop(idx)
+
+    return weights
+
+
+def getLatent(initialRGB, targetRGB, RGBvecList, initialLatent, latentVecList, latentAvg):
+    desiredVector = [targetRGB[0]-initialRGB[0], targetRGB[1]-initialRGB[1], targetRGB[2]-initialRGB[2]]
+    weights = findWeights(desiredVector, RGBvecList)
+
+    newLatent = initialLatent
+    totalWeight = 0
+    for i in range(len(weights)):
+        newLatent += weights[i]*latentVecList[i]*factor
+        totalWeight += weights[i]*factor
+
+    return newLatent-(totalWeight*latentAvg)
+
+
+RGBvecList = [zKrgb, zWrgb, zOrgb, zMrgb, zYrgb, zRrgb, zGrgb, zBrgb]
+latentVecList = [zBlack, zWhite, zOrange, zPurple, zYellow, zRed, zGreen, zBlue]
+zFinal = getLatent(startRGB, targetRGB, RGBvecList, zInput, latentVecList, zAvg)
+
 
 ############# Image generation and showing #############
 #fakeAvgImage = generator(zBlue)
 #saveImage(fakeAvgImage)
-fakeImageWithFeature = generator(zInput
-                                 + RGBdiff[0]*zRed + RGBdiff[1]*zGreen + RGBdiff[2]*zBlue
-                                 + KWdiff[0]*zBlack + KWdiff[1]*zWhite
-                                 - (RGBdiff[0]+RGBdiff[1]+RGBdiff[2] + KWdiff[0]+KWdiff[1])*zAvg)
 
+fakeImageWithFeature = generator(zFinal)
 saveImage(fakeImageWithFeature)

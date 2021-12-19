@@ -14,13 +14,13 @@ from copy import deepcopy
 
 path = 'LatentSpace'
 startRGB = [130/255, 95/255, 150/255]
-targetRGB = [235/255, 230/255, 230/255]
+targetRGB = [55/255, 45/255, 50/255]
 
 # multipliers
-# 1 is for startRGB -> [0, 0, 0]
-# 2 for [0, 0, 0] -> targetRGB
+# Reduce is for startRGB -> [0, 0, 0]
+# Increase for [0, 0, 0] -> targetRGB
 factorReduce   = 1
-factorIncrease = 15
+factorIncrease = 1
 """
 Tips/steps for how to get desired colour:
 1: set startRGB according to input image
@@ -257,5 +257,11 @@ zFinal =      getLatent([0,0,0], targetRGB, RGBvecList, zColourless, latentVecLi
 #for z in latentVecList:
 #    fakeAvgImage = generator(z)
 #    saveImage(fakeAvgImage)
+
+
 fakeImageWithFeature = generator(zFinal)
 saveImage(fakeImageWithFeature)
+
+
+#fakeAvgImage = generator(zWhite + zBlue*0.25)
+#saveImage(fakeAvgImage)

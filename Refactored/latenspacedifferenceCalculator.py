@@ -226,7 +226,13 @@ def findWeights(desiredVec, vecList):
         remainingVec = [desiredVec[0]-currentVec[0], desiredVec[1]-currentVec[1], desiredVec[2]-currentVec[2]]
 
         # save weight
-        weights[idx] = mult
+        originalIdx = 0
+        i = 0
+        for originalVec in vecList:
+            if originalVec == vec:
+                originalIdx = i
+            i += 1
+        weights[originalIdx] = mult
 
         # remove element to only use it once
         remainingVecList.pop(idx)

@@ -13,14 +13,14 @@ from math import sqrt, pi
 from copy import deepcopy
 
 path = 'LatentSpace'
-startRGB = [130/255, 95/255, 150/255]
-targetRGB = [55/255, 45/255, 50/255]
+startRGB = [215/255, 60/255, 70/255]
+targetRGB = [230/255, 205/255, 135/255]
 
 # multipliers
 # Reduce is for startRGB -> [0, 0, 0]
 # Increase for [0, 0, 0] -> targetRGB
-factorReduce   = 1
-factorIncrease = 1
+factorReduce   = 1.5
+factorIncrease = 3
 """
 Tips/steps for how to get desired colour:
 1: set startRGB according to input image
@@ -208,20 +208,13 @@ def findWeights(desiredVec, vecList):
         idx = findClosestVec(remainingVec, remainingVecList)
         vec = remainingVecList[idx]
 
-        # find whether to use positive or negative amount
-        sign = 1
-        angle = vecAngle(currentVec, vec)
-        if angle > pi/2:
-            sign = -1
-        vec = [vec[0]*sign, vec[1]*sign, vec[2]*sign]
-
         # find ideal amplitude
         vecLen = vecLength(vec)
         normVec = [vec[0]/vecLen, vec[1]/vecLen, vec[2]/vecLen]
         amplitude = np.dot(remainingVec, normVec)
 
         # add new vector
-        mult = sign*amplitude
+        mult = amplitude
         currentVec = [currentVec[0]+(vec[0]*mult), currentVec[1]+(vec[1]*mult), currentVec[2]+(vec[2]*mult)]
         remainingVec = [desiredVec[0]-currentVec[0], desiredVec[1]-currentVec[1], desiredVec[2]-currentVec[2]]
 

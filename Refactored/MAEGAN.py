@@ -27,7 +27,7 @@ import torch
 os.makedirs("images", exist_ok=True)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--n_epochs",   type=int,   default=100,   help="number of epochs of training")
+parser.add_argument("--n_epochs",   type=int,   default=10,   help="number of epochs of training")
 parser.add_argument("--batch_size", type=int,   default=64,     help="size of the batches")
 parser.add_argument("--lr",         type=float, default=0.0002, help="learning rate")
 parser.add_argument("--n_cpu",      type=int,   default=8,      help="number of cpu threads to use during batch generation")
@@ -40,7 +40,7 @@ parser.add_argument("--n_critic",   type=int,   default=1,      help="number of 
 parser.add_argument("--clip_value", type=float, default=-1,     help="lower and upper clip value for disc. weights. (-1 = no clipping)")
 parser.add_argument("--sample_interval", type=int,  default=250,    help="iters between image samples")
 parser.add_argument("--update_interval", type=int,  default=50,     help="iters between terminal updates")
-parser.add_argument("--epochs_per_save", type=int,  default=5,      help="epochs between model saves")
+parser.add_argument("--epochs_per_save", type=int,  default=10,      help="epochs between model saves")
 parser.add_argument("--split_disc_loss", type=bool, default=False,  help="whether to split discriminator loss into real/fake")
 parser.add_argument("--beta1",      type=float, default=0.5,    help="beta1 hyperparameter for Adam optimizer")
 
@@ -48,7 +48,7 @@ opt = parser.parse_args()
 print(opt)
 
 
-dataroot = "C:\\Users\\Silas Bachmann\\Downloads\\archive"
+dataroot = "C:\\Users\\Anders\\source\\repos\\data\\anime_faces"
 seed = torch.Generator().seed()
 print("Current seed: " + str(seed))
 
@@ -80,7 +80,7 @@ class Generator(torch.nn.Module):
             # state size. (ngf) x 32 x 32
             torch.nn.ConvTranspose2d(opt.ngf, opt.channels, 4, 2, 1, bias=False),
             # state size. (nc) x 64 x 64
-            torch.nn.LeakyReLU(0.2, inplace=True),
+            torch.nn.Tanh()
         )
 
     def forward(self, x):
@@ -110,7 +110,6 @@ class Discriminator(torch.nn.Module):
             torch.nn.LeakyReLU(0.2, inplace=True),
             # state size. (ndf*8) x 4 x 4
             torch.nn.Conv2d(opt.ndf * 8, 1, 4, 1, 0, bias=False),
-            torch.nn.LeakyReLU(0.2, inplace=True),
         )
 
     def forward(self, x):
